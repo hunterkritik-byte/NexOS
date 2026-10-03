@@ -101,6 +101,40 @@ mod x86_kernel {
         }
     }
 
+    struct Keyboard {
+        status: Port<u8>,
+        data: Port<u8>,
+    }
+
+    impl Keyboard {
+        unsafe fn new() -> Self {
+            Self { status: Port::new(0x64), data: Port::new(0x60) }
+        }
+
+        unsafe fn read_char(&mut self) -> Option<u8> {
+            if self.status.read() & 1 == 0 { return None; }
+            let scancode = self.data.read();
+            if scancode & 0x80 != 0 { return None; }
+            Some(match scancode {
+                0x02..=0x0a => b'1' + (scancode - 0x02),
+                0x0b => b'0',
+                0x10..=0x19 => b"qwertyuiop"[(scancode - 0x10) as usize],
+                0x1e..=0x26 => b"asdfghjkl"[(scancode - 0x1e) as usize],
+                0x2c..=0x32 => b"zxcvbnm"[(scancode - 0x2c) as usize],
+                0x39 => b' ',
+                0x1c => b'\n',
+                0x0e => 8,
+                0x0c => b'-',
+                0x0d => b'=',
+                0x27 => b';',
+                0x33 => b',',
+                0x34 => b'.',
+                0x35 => b'/',
+                _ => return None,
+            })
+        }
+    }
+
     struct Serial {
         data: Port<u8>,
         interrupt: Port<u8>,
@@ -196,13 +230,13 @@ mod x86_kernel {
         }
     }
 
-    fn shell(term: &mut Terminal, serial: &mut Serial) -> ! {
+    fn shell(term: &mut Terminal, serial: &mut Serial, keyboard: &mut Keyboard) -> ! {
         let mut command = [0u8; 128];
         let mut len = 0usize;
         term.write_str("NexOS Terminal\nType 'help' for commands.\n\nnexos> ");
 
         loop {
-            if let Some(byte) = unsafe { serial.read_byte() } {
+            if let Some(byte) = unsafe { keyboard.read_char() } {
                 match byte {
                     b'\r' | b'\n' => {
                         term.put_byte(b'\n');
@@ -241,7 +275,7 @@ mod x86_kernel {
             let mut frame_allocator = BootInfoFrameAllocator::new(&boot_info.memory_regions);
             let mut mapper = unsafe { paging::init_mapper(VirtAddr::new(offset)) };
             terminal.write_str("Memory: active L4 mapper connected; usable-frame allocator online.\\n");
-            if frame_allocator.allocate_frame().is_some() {
+            if x86_64::structures::paging::FrameAllocator::allocate_frame(&mut frame_allocator).is_some() {
                 terminal.write_str("Memory: verified usable physical frame allocation.\\n");
             } else {
                 terminal.write_str("Memory: no usable physical frames reported.\\n");
@@ -251,6 +285,7 @@ mod x86_kernel {
             terminal.write_str("Memory: physical-memory mapping unavailable; isolation setup deferred.\\n");
         }
         let mut serial = unsafe { Serial::new() };
+        let mut keyboard = unsafe { Keyboard::new() };
         boot_splash(&mut terminal);
 
         let mut vfs = fs::Vfs::<64>::new();
@@ -287,7 +322,7 @@ mod x86_kernel {
             }
         }
         terminal.write_str("Network drivers are probe-only until chipset-specific implementations are added.\\n\\n");
-        shell(&mut terminal, &mut serial)
+        shell(&mut terminal, &mut serial, &mut keyboard)
     }
 
     #[panic_handler]
