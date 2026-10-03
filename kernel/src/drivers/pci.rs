@@ -35,3 +35,28 @@ pub unsafe fn scan<F:FnMut(PciDevice)>(mut f:F) {
 }
 
 pub fn is_network_controller(d:PciDevice)->bool { d.class==0x02 }
+
+/// Minimal PCI configuration-space scanner used during kernel bring-up.
+/// This discovers network-class devices; it does not initialize their drivers.
+pub struct PciScanner;
+
+impl PciScanner {
+    pub const fn new() -> Self {
+        Self
+    }
+
+    /// Fill the caller-provided array with discovered network controllers.
+    ///
+    /// # Safety
+    /// Uses legacy x86 PCI configuration I/O ports and must only run in ring 0.
+    pub unsafe fn scan_network(&self, out: &mut [Option<PciDevice>]) -> usize {
+        let mut count = 0usize;
+        scan(|device| {
+            if device.class == 0x02 && count < out.len() {
+                out[count] = Some(device);
+                count += 1;
+            }
+        });
+        count
+    }
+}
