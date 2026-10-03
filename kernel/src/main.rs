@@ -163,6 +163,31 @@ mod x86_kernel {
         }
     }
 
+    fn boot_splash(term: &mut Terminal) {
+        term.clear();
+        term.write_str("\n");
+        term.write_str("                 _   _ _______  __  __  ____  _____\n");
+        term.write_str("                | \ | | ____\ \/ / |  \/  |/ __ \/ ___/\n");
+        term.write_str("                |  \| |  _|  \  /  | |\/| | |  | \__ \\n");
+        term.write_str("                | |\  | |___ /  \\  | |  | | |__| |__/ /\n");
+        term.write_str("                |_| \_|_____/_/\\_\\ |_|  |_|\\____/____/\n");
+        term.write_str("\n");
+        term.write_str("                         NEXOS\n");
+        term.write_str("                    MADE BY KRITIK\n");
+        term.write_str("\n");
+        term.write_str("                         Loading");
+        for _ in 0..3 {
+            for _ in 0..30_000_000 {
+                core::hint::spin_loop();
+            }
+            term.write_str(".");
+        }
+        term.write_str("\n\n");
+        for _ in 0..30_000_000 {
+            core::hint::spin_loop();
+        }
+    }
+
     fn shell(term: &mut Terminal, serial: &mut Serial) -> ! {
         let mut command = [0u8; 128];
         let mut len = 0usize;
@@ -203,8 +228,8 @@ mod x86_kernel {
 
     fn kernel_main(_boot_info: &'static mut BootInfo) -> ! {
         let mut terminal = Terminal::new();
-        terminal.clear();
         let mut serial = unsafe { Serial::new() };
+        boot_splash(&mut terminal);
         shell(&mut terminal, &mut serial)
     }
 
