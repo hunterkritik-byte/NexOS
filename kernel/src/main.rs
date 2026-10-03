@@ -177,7 +177,7 @@ mod x86_kernel {
         }
     }
 
-    fn command(term: &mut Terminal, serial: &mut Serial, command: &[u8]) {
+    fn execute_command(term: &mut Terminal, serial: &mut Serial, command: &[u8]) {
         let mut end = command.len();
         while end > 0 && command[end - 1] == b' ' { end -= 1; }
         let cmd = &command[..end];
@@ -232,16 +232,16 @@ mod x86_kernel {
     }
 
     fn shell(term: &mut Terminal, serial: &mut Serial, keyboard: &mut Keyboard) -> ! {
-        let mut command = [0u8; 128];
+        let mut buffer = [0u8; 128];
         let mut len = 0usize;
         term.write_str("NexOS Terminal\nType 'help' for commands.\n\nnexos> ");
 
         loop {
-            if let Some(byte) = unsafe { keyboard.read_char() } {
+            if let Some(byte) = unsafe { keyboard.read_char() }.or_else(|| unsafe { serial.read_byte() }) {
                 match byte {
                     b'\r' | b'\n' => {
                         term.put_byte(b'\n');
-                        command(term, serial, &command[..len]);
+                        execute_command(term, serial, &buffer[..len]);
                         len = 0;
                         term.write_str("nexos> ");
                     }
