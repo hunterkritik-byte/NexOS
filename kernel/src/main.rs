@@ -7,6 +7,9 @@ mod x86_kernel {
     use core::fmt::Write;
     use x86_64::instructions::port::Port;
 
+    mod drivers;
+    mod net;
+
     const VGA_BUFFER: usize = 0xb8000;
     const VGA_WIDTH: usize = 80;
     const VGA_HEIGHT: usize = 25;
@@ -230,6 +233,35 @@ mod x86_kernel {
         let mut terminal = Terminal::new();
         let mut serial = unsafe { Serial::new() };
         boot_splash(&mut terminal);
+
+        terminal.write_str("Detecting network hardware...\\n");
+        let scanner = drivers::PciScanner::new();
+        let mut devices = [None; 8];
+        let count = unsafe { scanner.scan_network(&mut devices) };
+        let mut registry = net::device::NetworkRegistry::new();
+
+        if count == 0 {
+            terminal.write_str("Network: no PCI network controller detected.\\n");
+        } else {
+            for device in devices.iter().take(count).flatten() {
+                registry.register_pci(*device);
+            }
+            for index in 0..registry.len() {
+                if let Some((driver, kind, pci)) = registry.describe(index) {
+                    let kind_name = match kind {
+                        drivers::network::NetworkKind::Ethernet => "Ethernet",
+                        drivers::network::NetworkKind::WirelessOrOther => "Wireless/other",
+                    };
+                    let _ = writeln!(
+                        terminal,
+                        "NET: {kind_name} {:04x}:{:04x} via {driver}\\n",
+                        pci.vendor_id,
+                        pci.device_id
+                    );
+                }
+            }
+        }
+        terminal.write_str("Network drivers are probe-only until chipset-specific implementations are added.\\n\\n");
         shell(&mut terminal, &mut serial)
     }
 
