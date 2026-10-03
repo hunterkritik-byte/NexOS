@@ -3,10 +3,11 @@ use x86_64::structures::tss::TaskStateSegment;
 use x86_64::{VirtAddr, instructions::segmentation::{CS, SS}, instructions::tables::load_tss};
 
 pub const DOUBLE_FAULT_IST_INDEX: u16 = 0;
-pub const KERNEL_CODE_SELECTOR: u16 = 0x08;
-pub const KERNEL_DATA_SELECTOR: u16 = 0x10;
 pub const USER_CODE_SELECTOR: u16 = 0x1b;
 pub const USER_DATA_SELECTOR: u16 = 0x23;
+
+#[repr(align(16))]
+static mut KERNEL_SYSCALL_STACK: [u8; 8192] = [0; 8192];
 
 pub struct GlobalTables {
     pub gdt: GlobalDescriptorTable,
@@ -21,9 +22,10 @@ pub struct GlobalTables {
 impl GlobalTables {
     pub fn new() -> Self {
         let mut tss = TaskStateSegment::new();
-        // Dedicated ring-0 interrupt stack. Never overlap this with a user stack.
         tss.interrupt_stack_table[DOUBLE_FAULT_IST_INDEX as usize] =
             VirtAddr::new(0x0000_0000_0100_0000);
+        let stack_top = unsafe { core::ptr::addr_of!(KERNEL_SYSCALL_STACK) as u64 + 8192 };
+        tss.privilege_stack_table[0] = VirtAddr::new(stack_top);
 
         let mut gdt = GlobalDescriptorTable::new();
         let code = gdt.append(Descriptor::kernel_code_segment());
@@ -31,7 +33,6 @@ impl GlobalTables {
         let user_code = gdt.append(Descriptor::user_code_segment());
         let user_data = gdt.append(Descriptor::user_data_segment());
         let tss_selector = gdt.append(Descriptor::tss_segment(&tss));
-
         Self { gdt, code, data, user_code, user_data, tss_selector, tss }
     }
 
