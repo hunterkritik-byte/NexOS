@@ -187,7 +187,7 @@ mod x86_kernel {
             b"help" => term.write_str("Commands: help clear echo uname version status net wifi hotspot bluetooth reboot\n"),
             b"clear" => term.clear(),
             b"uname" => term.write_str("NexOS x86_64\n"),
-            b"version" => term.write_str("NexOS v0.2.0-prep (development build)\n"),
+            b"version" => term.write_str("NexOS development build (pre-v0.2.0)\n"),
             b"status" => term.write_str("NexOS: experimental\nTerminal: keyboard + COM1 serial polling\nWi-Fi: unavailable (no chipset driver)\nHotspot: unavailable (Wi-Fi AP stack not implemented)\nBluetooth: unavailable (no HCI/controller driver)\n"),
             b"net" => term.write_str("Network support: PCI discovery only; no network interface is active.\n"),
             b"wifi" | b"wifi status" => term.write_str("Wi-Fi unavailable: chipset-specific driver, firmware loading, and 802.11 management are not implemented.\n"),
