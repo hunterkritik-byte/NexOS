@@ -84,6 +84,7 @@ jobs:
             --package nexos-image-builder \
             -- \
             target/x86_64-unknown-none/release/nexkernel \
+            target/x86_64-unknown-none/release/nexshell \
             dist/NexOS-x86_64-bios.img \
             dist/NexOS-x86_64-uefi.img
 
