@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{fs, path::PathBuf};
 
 fn main() {
     let out_dir = PathBuf::from(std::env::var_os("OUT_DIR").expect("OUT_DIR is set by Cargo"));
@@ -17,7 +17,12 @@ fn main() {
         .create_disk_image(&bios_path)
         .expect("failed to create BIOS disk image");
 
-    println!("cargo:rustc-env=NEXOS_UEFI_IMAGE={}", uefi_path.display());
-    println!("cargo:rustc-env=NEXOS_BIOS_IMAGE={}", bios_path.display());
+    let dist = PathBuf::from("dist");
+    fs::create_dir_all(&dist).expect("failed to create dist");
+    fs::copy(&uefi_path, dist.join("NexOS-x86_64-UEFI.img"))
+        .expect("failed to copy UEFI image");
+    fs::copy(&bios_path, dist.join("NexOS-x86_64-BIOS.img"))
+        .expect("failed to copy BIOS image");
+
     println!("cargo:rerun-if-changed=kernel/src");
 }
