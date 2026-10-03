@@ -49,13 +49,26 @@ The bootloader is a loading component; it is not the NexOS kernel. NexKernel is 
 
 ## Current milestone
 
-The current milestone proves the real execution path:
+The current milestone now includes a real kernel terminal shell over the COM1 serial console:
 
     UEFI or BIOS
         -> bootloader
         -> NexKernel
-        -> x86_64 kernel entry
-        -> serial diagnostics
+        -> interactive NexOS terminal
+
+The shell currently supports:
+
+    help
+    clear
+    echo <text>
+    uname
+    reboot
+
+For QEMU development, start NexOS with the serial console attached to stdin/stdout:
+
+    qemu-system-x86_64 -drive format=raw,file=dist/NexOS-x86_64-bios.img -serial stdio -display none
+
+Type commands directly into the terminal running QEMU. The terminal implementation is intentionally small and kernel-native; framebuffer/keyboard input, userspace processes, filesystems, networking, and the graphical desktop remain later milestones.
 
 The kernel is no_std and no_main and receives real boot information from the boot environment.
 
