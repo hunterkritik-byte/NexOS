@@ -1,21 +1,74 @@
-name: NexOS build
+name: NexOS build and ISO
 
 on:
   push:
+    branches: ["main"]
+    tags: ["v*"]
   pull_request:
+
+permissions:
+  contents: read
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install QEMU
-        run: sudo apt-get update && sudo apt-get install -y qemu-system-x86
+      - name: Install system tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-system-x86 xorriso dosfstools
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: nightly-2026-07-06
+          targets: x86_64-unknown-none
 
       - name: Build NexOS
         run: cargo build --release
 
-      - name: Build kernel directly
-        run: cargo build --release --package nexkernel --target x86_64-unknown-none
+      - name: Create bootable ISO
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist/esp
+          UEFI_IMG="dist/NexOS-x86_64-UEFI.img"
+
+          # Locate the first FAT EFI System Partition in the UEFI disk image.
+          START=$(fdisk -l -o Device,Start,Sectors,Type "$UEFI_IMG" | awk '$4 ~ /EFI/ {print $2; exit}')
+          SECTORS=$(fdisk -l -o Device,Start,Sectors,Type "$UEFI_IMG" | awk '$4 ~ /EFI/ {print $3; exit}')
+          test -n "$START" && test -n "$SECTORS"
+
+          dd if="$UEFI_IMG" of=dist/esp.img bs=512 skip="$START" count="$SECTORS" status=none
+          xorriso -as mkisofs             -iso-level 3             -volid NEXOS             -eltorito-platform efi             -e esp.img             -no-emul-boot             -o dist/NexOS-x86_64.iso             dist/esp.img
+
+          sha256sum dist/NexOS-x86_64.iso > dist/NexOS-x86_64.iso.sha256
+          ls -lh dist/
+
+      - name: Boot-test UEFI image
+        run: |
+          timeout 20s qemu-system-x86_64             -drive format=raw,file=dist/NexOS-x86_64-UEFI.img             -serial stdio             -display none             -no-reboot || test $? -eq 124
+
+      - name: Upload development ISO
+        uses: actions/upload-artifact@v4
+        with:
+          name: NexOS-x86_64-development
+          path: |
+            dist/NexOS-x86_64.iso
+            dist/NexOS-x86_64.iso.sha256
+            dist/NexOS-x86_64-UEFI.img
+            dist/NexOS-x86_64-BIOS.img
+
+      - name: Upload release ISO
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/NexOS-x86_64.iso
+            dist/NexOS-x86_64.iso.sha256
+            dist/NexOS-x86_64-UEFI.img
+            dist/NexOS-x86_64-BIOS.img
+          generate_release_notes: true
