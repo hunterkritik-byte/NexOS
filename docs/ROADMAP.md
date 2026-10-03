@@ -44,7 +44,8 @@ This roadmap distinguishes source-code foundations from features that have been 
 
 ## Phase 4 — Storage
 - [x] VFS API and in-memory filesystem prototype
-- [x] Experimental block-device and persistent filesystem code
+- [x] Block-device abstraction and ATA PIO prototype (not yet proven on hardware)
+- [x] Fixed-slot persistent filesystem with multi-sector metadata and bounded file reads/writes (not yet integrated into boot path or hardware-tested)
 - [ ] Add a real block-device driver and safe device discovery
 - [ ] Validate on-disk metadata, allocation, bounds, and crash consistency
 - [ ] Implement a complete, tested filesystem and persistent userspace storage
