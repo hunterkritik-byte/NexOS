@@ -62,11 +62,28 @@ impl<D: BlockDevice> PersistentFs<D> {
 
         let magic = u32::from_le_bytes(metadata[0..4].try_into().unwrap());
         let version = u32::from_le_bytes(metadata[4..8].try_into().unwrap());
-        if magic == MAGIC && version == VERSION {
-            fs.decode_metadata(&metadata)?;
-        } else {
-            fs.format()?;
+        // Mount must never overwrite an unknown disk: it may contain another
+        // filesystem or recoverable data. Formatting is an explicit operation.
+        if magic != MAGIC || version != VERSION {
+            return Err(DiskError::InvalidBuffer);
         }
+        fs.decode_metadata(&metadata)?;
+        Ok(fs)
+    }
+
+    /// Explicitly initialize a new NexOS filesystem on the supplied device.
+    ///
+    /// WARNING: this overwrites the filesystem metadata sectors. Call only for
+    /// a disposable/new disk after the caller has selected the target device.
+    pub fn format(mut disk: D) -> Result<Self, DiskError> {
+        if disk.block_count() < DATA_START + MAX_FILES as u64 * DATA_BLOCKS_PER_ENTRY {
+            return Err(DiskError::OutOfBounds);
+        }
+        let mut fs = Self {
+            disk,
+            entries: [Dirent::empty(); MAX_FILES],
+        };
+        fs.initialize()?;
         Ok(fs)
     }
 
@@ -122,7 +139,7 @@ impl<D: BlockDevice> PersistentFs<D> {
         Ok(())
     }
 
-    fn format(&mut self) -> Result<(), DiskError> {
+    fn initialize(&mut self) -> Result<(), DiskError> {
         self.entries = [Dirent::empty(); MAX_FILES];
         self.insert_entry(b"/", true, 0)?;
         for name in [b"bin".as_slice(), b"etc", b"home", b"tmp"] {
