@@ -10,9 +10,8 @@ use core::mem::MaybeUninit;
 static mut GDT_STORAGE: MaybeUninit<gdt::GlobalTables> = MaybeUninit::uninit();
 static mut IDT_STORAGE: MaybeUninit<idt::Interrupts> = MaybeUninit::uninit();
 
-/// Install the architectural tables before any attempt to enter ring 3.
-pub unsafe fn init_cpu_tables() {
-    GDT_STORAGE.write(gdt::GlobalTables::new());
+pub unsafe fn init_cpu_tables(kernel_stack_top: u64) {
+    GDT_STORAGE.write(gdt::GlobalTables::new(kernel_stack_top));
     let gdt_ref = &*GDT_STORAGE.as_ptr();
     gdt_ref.init();
 
