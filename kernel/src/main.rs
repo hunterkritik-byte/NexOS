@@ -3,41 +3,222 @@
 
 #[cfg(target_os = "none")]
 mod x86_kernel {
-    use bootloader_api::{BootInfo, entry_point};
+    use bootloader_api::{entry_point, BootInfo};
     use core::fmt::Write;
-    use uart_16550::{Config, Uart16550Tty};
+    use x86_64::instructions::port::Port;
 
-    entry_point!(kernel_main);
+    const VGA_BUFFER: usize = 0xb8000;
+    const VGA_WIDTH: usize = 80;
+    const VGA_HEIGHT: usize = 25;
+    const COM1: u16 = 0x3f8;
 
-    fn serial() -> Uart16550Tty<uart_16550::backend::PioBackend> {
-        unsafe {
-            Uart16550Tty::new_port(0x3F8, Config::default()).expect("failed to initialize COM1")
+    struct Terminal {
+        row: usize,
+        col: usize,
+        color: u8,
+    }
+
+    impl Terminal {
+        const fn new() -> Self {
+            Self { row: 0, col: 0, color: 0x07 }
+        }
+
+        fn clear(&mut self) {
+            for i in 0..(VGA_WIDTH * VGA_HEIGHT) {
+                unsafe {
+                    core::ptr::write_volatile((VGA_BUFFER as *mut u16).add(i), (self.color as u16) << 8 | b' ' as u16);
+                }
+            }
+            self.row = 0;
+            self.col = 0;
+        }
+
+        fn put_byte(&mut self, byte: u8) {
+            match byte {
+                b'\n' => {
+                    self.col = 0;
+                    self.row += 1;
+                }
+                b'\r' => self.col = 0,
+                8 => {
+                    if self.col > 0 {
+                        self.col -= 1;
+                        self.write_cell(b' ');
+                    }
+                }
+                byte => {
+                    if self.col >= VGA_WIDTH {
+                        self.col = 0;
+                        self.row += 1;
+                    }
+                    self.write_cell(byte);
+                    self.col += 1;
+                }
+            }
+            if self.row >= VGA_HEIGHT {
+                self.scroll();
+            }
+        }
+
+        fn write_cell(&mut self, byte: u8) {
+            let index = self.row * VGA_WIDTH + self.col;
+            unsafe {
+                core::ptr::write_volatile(
+                    (VGA_BUFFER as *mut u16).add(index),
+                    ((self.color as u16) << 8) | byte as u16,
+                );
+            }
+        }
+
+        fn scroll(&mut self) {
+            for row in 1..VGA_HEIGHT {
+                for col in 0..VGA_WIDTH {
+                    let src = (row * VGA_WIDTH + col) as *const u16;
+                    let dst = (VGA_BUFFER + ((row - 1) * VGA_WIDTH + col) * 2) as *mut u16;
+                    unsafe { core::ptr::write_volatile(dst, core::ptr::read_volatile(src)); }
+                }
+            }
+            for col in 0..VGA_WIDTH {
+                let dst = (VGA_BUFFER + ((VGA_HEIGHT - 1) * VGA_WIDTH + col) * 2) as *mut u16;
+                unsafe { core::ptr::write_volatile(dst, (self.color as u16) << 8 | b' ' as u16); }
+            }
+            self.row = VGA_HEIGHT - 1;
+            self.col = 0;
+        }
+
+        fn write_str(&mut self, s: &str) {
+            for byte in s.bytes() {
+                self.put_byte(byte);
+            }
         }
     }
 
-    fn kernel_main(_boot_info: &'static mut BootInfo) -> ! {
-        let mut serial = serial();
-        writeln!(serial, "NexKernel {}", env!("CARGO_PKG_VERSION")).ok();
-        writeln!(serial, "architecture: x86_64").ok();
-        writeln!(serial, "status: kernel entry reached").ok();
+    struct Serial {
+        data: Port<u8>,
+        interrupt: Port<u8>,
+        fifo: Port<u8>,
+        line: Port<u8>,
+        modem: Port<u8>,
+    }
+
+    impl Serial {
+        unsafe fn new() -> Self {
+            let mut serial = Self {
+                data: Port::new(COM1),
+                interrupt: Port::new(COM1 + 1),
+                fifo: Port::new(COM1 + 2),
+                line: Port::new(COM1 + 3),
+                modem: Port::new(COM1 + 4),
+            };
+            serial.init();
+            serial
+        }
+
+        unsafe fn init(&mut self) {
+            self.interrupt.write(0);
+            self.line.write(0x80);
+            self.data.write(3);
+            self.interrupt.write(0);
+            self.line.write(3);
+            self.fifo.write(0xc7);
+            self.modem.write(0x0b);
+        }
+
+        unsafe fn write_byte(&mut self, byte: u8) {
+            while self.line.read() & 0x20 == 0 {}
+            self.data.write(byte);
+        }
+
+        unsafe fn read_byte(&mut self) -> Option<u8> {
+            if self.line.read() & 1 == 0 { None } else { Some(self.data.read()) }
+        }
+    }
+
+    fn command(term: &mut Terminal, serial: &mut Serial, command: &[u8]) {
+        let mut end = command.len();
+        while end > 0 && command[end - 1] == b' ' { end -= 1; }
+        let cmd = &command[..end];
+
+        match cmd {
+            b"" => {}
+            b"help" => term.write_str("Commands: help clear echo uname reboot\n"),
+            b"clear" => term.clear(),
+            b"uname" => term.write_str("NexOS 0.1.0 x86_64\n"),
+            b"reboot" => unsafe {
+                let mut port = Port::new(0x64u16);
+                port.write(0xfeu8);
+            },
+            _ if cmd.starts_with(b"echo ") => {
+                if let Ok(text) = core::str::from_utf8(&cmd[5..]) {
+                    term.write_str(text);
+                    term.put_byte(b'\n');
+                }
+            }
+            _ => term.write_str("nexos: command not found\n"),
+        }
+
+        unsafe {
+            serial.write_byte(b'\r');
+            serial.write_byte(b'\n');
+        }
+    }
+
+    fn shell(term: &mut Terminal, serial: &mut Serial) -> ! {
+        let mut command = [0u8; 128];
+        let mut len = 0usize;
+        term.write_str("NexOS Terminal\nType 'help' for commands.\n\nnexos> ");
 
         loop {
+            if let Some(byte) = unsafe { serial.read_byte() } {
+                match byte {
+                    b'\r' | b'\n' => {
+                        term.put_byte(b'\n');
+                        command(term, serial, &command[..len]);
+                        len = 0;
+                        term.write_str("nexos> ");
+                    }
+                    8 | 127 => {
+                        if len > 0 {
+                            len -= 1;
+                            term.put_byte(8);
+                            unsafe { serial.write_byte(8); }
+                        }
+                    }
+                    32..=126 => {
+                        if len < command.len() {
+                            command[len] = byte;
+                            len += 1;
+                            term.put_byte(byte);
+                            unsafe { serial.write_byte(byte); }
+                        }
+                    }
+                    _ => {}
+                }
+            }
             core::hint::spin_loop();
         }
+    }
+
+    entry_point!(kernel_main);
+
+    fn kernel_main(_boot_info: &'static mut BootInfo) -> ! {
+        let mut terminal = Terminal::new();
+        terminal.clear();
+        let mut serial = unsafe { Serial::new() };
+        shell(&mut terminal, &mut serial)
     }
 
     #[panic_handler]
     fn panic(info: &core::panic::PanicInfo) -> ! {
-        let mut serial = serial();
-        writeln!(serial, "NEXKERNEL PANIC: {info}").ok();
-
-        loop {
-            core::hint::spin_loop();
-        }
+        let mut terminal = Terminal::new();
+        terminal.clear();
+        terminal.write_str("NEXKERNEL PANIC: ");
+        let _ = write!(terminal, "{info}");
+        loop { core::hint::spin_loop(); }
     }
 }
 
 #[cfg(not(target_os = "none"))]
 fn main() {
-    // The kernel is x86_64-only. This host stub lets cargo check run on the build host.
+    println!("NexOS kernel host check passed.");
 }
