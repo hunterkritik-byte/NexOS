@@ -259,8 +259,8 @@ mod x86_kernel {
                         }
                     }
                     32..=126 => {
-                        if len < command.len() {
-                            command[len] = byte;
+                        if len < buffer.len() {
+                            buffer[len] = byte;
                             len += 1;
                             term.put_byte(byte);
                             unsafe { serial.write_byte(byte); }
