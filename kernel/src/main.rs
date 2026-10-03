@@ -184,9 +184,15 @@ mod x86_kernel {
 
         match cmd {
             b"" => {}
-            b"help" => term.write_str("Commands: help clear echo uname reboot\n"),
+            b"help" => term.write_str("Commands: help clear echo uname version status net wifi hotspot bluetooth reboot\n"),
             b"clear" => term.clear(),
-            b"uname" => term.write_str("NexOS 0.1.0 x86_64\n"),
+            b"uname" => term.write_str("NexOS x86_64\n"),
+            b"version" => term.write_str("NexOS v0.2.0-prep (development build)\n"),
+            b"status" => term.write_str("NexOS: experimental\nTerminal: keyboard + COM1 serial polling\nWi-Fi: unavailable (no chipset driver)\nHotspot: unavailable (Wi-Fi AP stack not implemented)\nBluetooth: unavailable (no HCI/controller driver)\n"),
+            b"net" => term.write_str("Network support: PCI discovery only; no network interface is active.\n"),
+            b"wifi" | b"wifi status" => term.write_str("Wi-Fi unavailable: chipset-specific driver, firmware loading, and 802.11 management are not implemented.\n"),
+            b"hotspot" | b"hotspot status" => term.write_str("Hotspot unavailable: requires a working Wi-Fi driver, AP mode, authentication, and DHCP service.\n"),
+            b"bluetooth" | b"bluetooth status" => term.write_str("Bluetooth unavailable: no HCI transport/controller driver or Bluetooth protocol stack is implemented.\n"),
             b"reboot" => unsafe {
                 let mut port = Port::new(0x64u16);
                 port.write(0xfeu8);
