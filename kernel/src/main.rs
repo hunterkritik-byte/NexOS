@@ -284,6 +284,7 @@ mod x86_kernel {
         } else {
             terminal.write_str("Memory: physical-memory mapping unavailable; isolation setup deferred.\\n");
         }
+        unsafe { arch::x86_64::init_cpu_tables(); }
         let mut serial = unsafe { Serial::new() };
         let mut keyboard = unsafe { Keyboard::new() };
         boot_splash(&mut terminal);
