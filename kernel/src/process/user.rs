@@ -10,6 +10,29 @@ use x86_64::{
 pub const USER_STACK_TOP: u64 = 0x0080_0000;
 pub const USER_STACK_PAGES: u64 = 8;
 
+pub fn find_init_elf(ramdisk: &[u8]) -> Result<&[u8], &'static str> {
+    if ramdisk.len() < 96 || &ramdisk[..4] != b"NEXR" {
+        return Err("invalid NexOS initramfs");
+    }
+    let version = u32::from_le_bytes(ramdisk[4..8].try_into().unwrap());
+    let count = u32::from_le_bytes(ramdisk[8..12].try_into().unwrap());
+    let data_start = u32::from_le_bytes(ramdisk[12..16].try_into().unwrap()) as usize;
+    if version != 1 || count != 1 || data_start < 96 || data_start > ramdisk.len() {
+        return Err("invalid initramfs header");
+    }
+    let name_end = ramdisk[16..80].iter().position(|&b| b == 0).unwrap_or(64);
+    if &ramdisk[16..16 + name_end] != b"/bin/nexshell" {
+        return Err("nexshell entry missing");
+    }
+    let offset = u64::from_le_bytes(ramdisk[80..88].try_into().unwrap()) as usize;
+    let len = u64::from_le_bytes(ramdisk[88..96].try_into().unwrap()) as usize;
+    let end = offset.checked_add(len).ok_or("initramfs file overflow")?;
+    if offset < data_start || end > ramdisk.len() {
+        return Err("initramfs file outside image");
+    }
+    Ok(&ramdisk[offset..end])
+}
+
 pub struct UserProcess {
     pub root: PhysFrame<Size4KiB>,
     pub entry: u64,
