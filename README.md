@@ -1,120 +1,95 @@
 # NexOS
 
-**NexOS is an independent, real-world operating system being built from the ground up.**
+**NexOS is an experimental, from-scratch operating-system project written primarily in Rust.** NexKernel currently targets x86_64 and uses the Rust bootloader crate as its loading layer.
 
-NexOS uses its own kernel, **NexKernel**, with Rust as the primary implementation language and x86_64 as the first hardware architecture. The project is intended to progress from a bootable kernel to a complete installable operating system for supported laptops and PCs.
+> **Status: early development.** NexOS is not a daily-driver OS. The repository contains boot, terminal, memory-management, filesystem, process, graphics, and networking foundations, but several are incomplete or not connected to working hardware drivers.
 
-> **Status: Development / experimental.**
->
-> NexOS is **not yet a Windows/Linux replacement or daily-driver operating system**. The repository contains real kernel, memory-management, process, terminal, filesystem, graphics, PCI/networking, and boot-image foundations, but hardware coverage and userspace are still incomplete.
+## What currently works (and what does not)
 
+- **Boot:** BIOS and UEFI disk-image generation is provided by the image-builder. Test images in QEMU first.
+- **Kernel terminal:** a basic VGA text terminal accepts PS/2 keyboard input. COM1 serial output is initialized; the development shell also polls serial input.
+- **Shell:** basic commands include `help`, `clear`, `echo`, `uname`, `version`, `status`, `net`, `wifi`, `hotspot`, `bluetooth`, and `reboot`. Network status commands report unavailable hardware support honestly; they do not enable those services.
+- **Memory/processes:** boot memory-map access, frame allocation, page-table helpers, ELF inspection/loading, and syscall/process foundations exist. Do not assume full isolation or general-purpose multitasking.
+- **Storage:** an in-memory VFS and experimental block/persistent-filesystem code exist. A complete, tested disk-backed filesystem and user-facing file commands are not yet available.
+- **Networking:** PCI network-controller discovery and protocol-layer foundations exist. The current VirtIO network driver deliberately refuses to enable DMA until correct physical-address mapping and queue programming are implemented. No usable NIC is currently brought online by the boot path.
+- **Wi-Fi hotspot:** not implemented. It needs a supported Wi-Fi chipset driver, firmware handling, 802.11 management, AP mode, authentication, and DHCP/network integration.
+- **Bluetooth:** not implemented. It needs a supported controller transport/driver and HCI plus higher-level Bluetooth protocols.
+- **Graphics:** framebuffer and windowing foundations exist; this is not yet a complete desktop environment.
 
-## Goals
-
-- Own kernel and kernel/user boundary
-- Real multitasking and process isolation
-- Real memory management
-- Real storage and filesystem support
-- Real hardware drivers
-- Real networking
-- Native userspace and shell
-- Graphical desktop
-- Installable x86_64 ISO
-- Reproducible and signed release artifacts
+See [docs/ROADMAP.md](docs/ROADMAP.md) for the tracked status and [docs/NETWORKING.md](docs/NETWORKING.md) for the Wi-Fi, hotspot, Bluetooth, and Ethernet plan.
 
 ## Architecture
 
-    Firmware
-      |
-      v
-    UEFI / BIOS
-      |
-      v
-    Bootloader
-      |
-      v
-    NexKernel
-      |
-      +-- memory
-      +-- interrupts
-      +-- scheduler
-      +-- processes
-      +-- syscalls
-      +-- IPC
-      +-- VFS
-      +-- drivers
-      +-- networking
-      |
-      v
-    NexOS userspace
+```text
+Firmware (BIOS / UEFI)
+        |
+     Bootloader
+        |
+     NexKernel
+        +-- x86_64 architecture code
+        +-- memory and page tables
+        +-- interrupts and syscalls
+        +-- process/ELF foundations
+        +-- terminal and shell
+        +-- VFS and storage foundations
+        +-- PCI and network foundations
+        |
+     NexOS userspace (early)
+```
 
-The bootloader is a loading component; it is not the NexOS kernel. NexKernel is developed independently in this repository.
-
-## Current milestone
-
-NexOS currently has real foundations for:
-
-- x86_64 bootable NexKernel
-- bootloader BootInfo and memory-map integration
-- physical-frame allocation and page-table foundations
-- process, syscall, and ELF-loader foundations
-- interactive kernel terminal and keyboard input
-- VFS/filesystem foundations
-- framebuffer and graphics/window-manager foundations
-- PCI hardware discovery
-- network-device and VirtIO transport foundations
-- Ethernet/ARP/IPv4/UDP/TCP/DHCP/DNS/socket foundations
-- automated CI and development image generation
-
-These are development components, not yet a complete general-purpose desktop OS.
-
+The bootloader is a loading component, not the NexOS kernel. NexKernel is developed independently in this repository.
 
 ## Build
 
-Install QEMU on Debian or Ubuntu:
+Requirements: Rust nightly (pinned by `rust-toolchain.toml`) and an x86_64 host. Install QEMU on Debian/Ubuntu for virtual-machine testing:
 
-    sudo apt update
-    sudo apt install qemu-system-x86
+```sh
+sudo apt update
+sudo apt install qemu-system-x86 ovmf xorriso
+```
 
-Then:
+Build the kernel and userspace shell:
 
-    cargo build --release
+```sh
+cargo build --release --package nexkernel --target x86_64-unknown-none
+cargo build --release --package nexshell --target x86_64-unknown-none
+```
 
-Run with UEFI:
+Create BIOS and UEFI disk images:
 
-    cargo run -- uefi
+```sh
+mkdir -p dist
+cargo run --release --package nexos-image-builder -- \
+  target/x86_64-unknown-none/release/nexkernel \
+  target/x86_64-unknown-none/release/nexshell \
+  dist/NexOS-x86_64-bios.img \
+  dist/NexOS-x86_64-uefi.img
+```
 
-Run with legacy BIOS:
+Run the BIOS image in QEMU:
 
-    cargo run -- bios
+```sh
+qemu-system-x86_64 -drive format=raw,file=dist/NexOS-x86_64-bios.img -serial stdio
+```
 
-Build only the kernel:
+For UEFI, use OVMF firmware and a writable OVMF variables image appropriate for your distribution. Exact firmware paths vary by host. See [docs/BUILDING.md](docs/BUILDING.md).
 
-    cargo build --package nexkernel --target x86_64-unknown-none
+The CI-generated `NexOS-x86_64.iso` currently packages the BIOS and UEFI disk images as files; it is **not a directly bootable hybrid ISO**. Boot the `.img` files with the corresponding firmware.
 
-## Release readiness
+## Release policy
 
-The current v0.1.0 line is a **development milestone**, not a daily-driver release.
+A Git tag or successful CI run does not by itself mean NexOS is ready for daily use. Before calling a release hardware-ready, the project needs reproducible builds, verified boot tests, a documented hardware compatibility matrix, working storage and user applications, and end-to-end tests for each advertised device.
 
-Before publishing a user-facing ISO release, NexOS must have:
-
-1. Reliable kernel and userspace boot.
-2. Persistent storage and filesystem support.
-3. Installer and recovery environment.
-4. Real RX/TX on documented supported NICs.
-5. Documented supported Wi-Fi/Bluetooth hardware with drivers and firmware support.
-6. Keyboard, mouse, display and graphics support on supported hardware.
-7. Isolated user processes and working application execution.
-8. End-to-end networking.
-9. CI-produced bootable ISO artifacts.
-10. QEMU and physical-hardware validation.
-
-A GitHub Actions success alone does not mean NexOS is ready to replace Windows or Linux.
-
+Do not install development images on a production disk. Prefer QEMU or disposable hardware.
 
 ## Development
 
-See docs/ARCHITECTURE.md, docs/BUILDING.md, docs/ROADMAP.md, SECURITY.md, and CONTRIBUTING.md.
+- [Architecture](docs/ARCHITECTURE.md)
+- [Build instructions](docs/BUILDING.md)
+- [Roadmap](docs/ROADMAP.md)
+- [Networking, Wi-Fi, hotspot, and Bluetooth](docs/NETWORKING.md)
+- [Contributing](CONTRIBUTING.md)
+- [Security policy](SECURITY.md)
 
 ## License
 
@@ -123,5 +98,3 @@ Apache-2.0
 ## Maintainer
 
 Kritik Bhattarai
-
-Project inquiries and security coordination: hunterkritik@gmail.com
