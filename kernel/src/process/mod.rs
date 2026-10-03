@@ -9,4 +9,4 @@ pub mod syscall_entry;
 pub use scheduler::{Process, Scheduler};
 
 pub mod user;
-pub use user::{UserProcess, build_user_image, install_user_cr3};
+pub use user::{build_elf_process, install_user_cr3, launch_user_process, UserProcess};
