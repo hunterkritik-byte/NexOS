@@ -168,8 +168,14 @@ mod x86_kernel {
         }
 
         unsafe fn write_byte(&mut self, byte: u8) {
-            while self.line.read() & 0x20 == 0 {}
-            self.data.write(byte);
+            // Do not let an absent or broken UART freeze the interactive shell.
+            for _ in 0..1_000_000 {
+                if self.line.read() & 0x20 != 0 {
+                    self.data.write(byte);
+                    return;
+                }
+                core::hint::spin_loop();
+            }
         }
 
         unsafe fn read_byte(&mut self) -> Option<u8> {
