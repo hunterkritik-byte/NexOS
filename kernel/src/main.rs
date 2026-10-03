@@ -183,38 +183,108 @@ mod x86_kernel {
         }
     }
 
-    fn execute_command(term: &mut Terminal, serial: &mut Serial, command: &[u8]) {
+    fn execute_command(
+        term: &mut Terminal,
+        serial: &mut Serial,
+        command: &[u8],
+        vfs: &mut fs::Vfs<64>,
+    ) {
         let mut end = command.len();
         while end > 0 && command[end - 1] == b' ' { end -= 1; }
         let cmd = &command[..end];
+        let line = match core::str::from_utf8(cmd) {
+            Ok(line) => line,
+            Err(_) => {
+                term.write_str("nexos: command is not valid UTF-8\\n");
+                return;
+            }
+        };
+        let (verb, args) = match line.split_once(' ') {
+            Some((verb, args)) => (verb, args.trim_start()),
+            None => (line, ""),
+        };
 
-        match cmd {
-            b"" => {}
-            b"help" => term.write_str("Commands: help clear echo uname version status net wifi hotspot bluetooth reboot\n"),
-            b"clear" => term.clear(),
-            b"uname" => term.write_str("NexOS x86_64\n"),
-            b"version" => term.write_str("NexOS development build (pre-v0.2.0)\n"),
-            b"status" => term.write_str("NexOS: experimental\nTerminal: keyboard + COM1 serial polling\nWi-Fi: unavailable (no chipset driver)\nHotspot: unavailable (Wi-Fi AP stack not implemented)\nBluetooth: unavailable (no HCI/controller driver)\n"),
-            b"net" => term.write_str("Network support: PCI discovery only; no network interface is active.\n"),
-            b"wifi" | b"wifi status" => term.write_str("Wi-Fi unavailable: chipset-specific driver, firmware loading, and 802.11 management are not implemented.\n"),
-            b"hotspot" | b"hotspot status" => term.write_str("Hotspot unavailable: requires a working Wi-Fi driver, AP mode, authentication, and DHCP service.\n"),
-            b"bluetooth" | b"bluetooth status" => term.write_str("Bluetooth unavailable: no HCI transport/controller driver or Bluetooth protocol stack is implemented.\n"),
-            b"reboot" => unsafe {
+        match verb {
+            "" => {}
+            "help" => term.write_str(
+                "Commands: help clear echo uname version status pwd ls cat touch mkdir write net wifi hotspot bluetooth reboot\\n",
+            ),
+            "clear" => term.clear(),
+            "uname" => term.write_str("NexOS x86_64\\n"),
+            "version" => term.write_str("NexOS development build (pre-v0.2.0)\\n"),
+            "status" => term.write_str("NexOS: experimental\\nTerminal: keyboard + COM1 serial polling\\nFilesystem: in-memory VFS\\nWi-Fi: unavailable (no chipset driver)\\nHotspot: unavailable (Wi-Fi AP stack not implemented)\\nBluetooth: unavailable (no HCI/controller driver)\\n"),
+            "net" => term.write_str("Network support: PCI discovery only; no network interface is active.\\n"),
+            "wifi" => term.write_str("Wi-Fi unavailable: chipset driver, firmware loading, and 802.11 management are not implemented.\\n"),
+            "hotspot" => term.write_str("Hotspot unavailable: Wi-Fi AP mode, authentication, and DHCP service are not implemented.\\n"),
+            "bluetooth" => term.write_str("Bluetooth unavailable: no HCI transport/controller driver or Bluetooth protocol stack is implemented.\\n"),
+            "pwd" => term.write_str("/\\n"),
+            "ls" => term.write_str("bin  dev  etc  home  proc  sbin  tmp  var\\n"),
+            "cat" => {
+                if args.is_empty() {
+                    term.write_str("usage: cat /absolute/path\\n");
+                } else {
+                    let mut data = [0u8; 4096];
+                    match fs::FileSystem::read(vfs, args, &mut data) {
+                        Ok(len) => match core::str::from_utf8(&data[..len]) {
+                            Ok(contents) => {
+                                term.write_str(contents);
+                                if !contents.ends_with('\\n') { term.put_byte(b'\\n'); }
+                            }
+                            Err(_) => term.write_str("cat: file is not valid UTF-8\\n"),
+                        },
+                        Err(_) => term.write_str("cat: cannot read file\\n"),
+                    }
+                }
+            }
+            "touch" => {
+                if args.is_empty() {
+                    term.write_str("usage: touch /absolute/path\\n");
+                } else {
+                    match fs::FileSystem::create(vfs, args) {
+                        Ok(()) => term.write_str(""),
+                        Err(fs::FsError::AlreadyExists) => term.write_str("touch: file already exists\\n"),
+                        Err(_) => term.write_str("touch: cannot create file\\n"),
+                    }
+                }
+            }
+            "mkdir" => {
+                if args.is_empty() {
+                    term.write_str("usage: mkdir /absolute/path\\n");
+                } else {
+                    match fs::FileSystem::mkdir(vfs, args) {
+                        Ok(()) => term.write_str(""),
+                        Err(_) => term.write_str("mkdir: cannot create directory\\n"),
+                    }
+                }
+            }
+            "write" => {
+                if let Some((path, contents)) = args.split_once(' ') {
+                    if matches!(fs::FileSystem::create(vfs, path), Ok(()) | Err(fs::FsError::AlreadyExists)) {
+                        match fs::FileSystem::write(vfs, path, contents.as_bytes()) {
+                            Ok(_) => term.write_str(""),
+                            Err(_) => term.write_str("write: cannot write file\\n"),
+                        }
+                    } else {
+                        term.write_str("write: cannot create file\\n");
+                    }
+                } else {
+                    term.write_str("usage: write /absolute/path text to store\\n");
+                }
+            }
+            "echo" => {
+                term.write_str(args);
+                term.put_byte(b'\\n');
+            }
+            "reboot" => unsafe {
                 let mut port = Port::new(0x64u16);
                 port.write(0xfeu8);
             },
-            _ if cmd.starts_with(b"echo ") => {
-                if let Ok(text) = core::str::from_utf8(&cmd[5..]) {
-                    term.write_str(text);
-                    term.put_byte(b'\n');
-                }
-            }
-            _ => term.write_str("nexos: command not found\n"),
+            _ => term.write_str("nexos: command not found\\n"),
         }
 
         unsafe {
-            serial.write_byte(b'\r');
-            serial.write_byte(b'\n');
+            serial.write_byte(b'\\r');
+            serial.write_byte(b'\\n');
         }
     }
 
@@ -243,7 +313,7 @@ mod x86_kernel {
         }
     }
 
-    fn shell(term: &mut Terminal, serial: &mut Serial, keyboard: &mut Keyboard) -> ! {
+    fn shell(term: &mut Terminal, serial: &mut Serial, keyboard: &mut Keyboard, vfs: &mut fs::Vfs<64>) -> ! {
         let mut buffer = [0u8; 128];
         let mut len = 0usize;
         term.write_str("NexOS Terminal\nType 'help' for commands.\n\nnexos> ");
@@ -253,7 +323,7 @@ mod x86_kernel {
                 match byte {
                     b'\r' | b'\n' => {
                         term.put_byte(b'\n');
-                        execute_command(term, serial, &buffer[..len]);
+                        execute_command(term, serial, &buffer[..len], vfs);
                         len = 0;
                         term.write_str("nexos> ");
                     }
@@ -353,7 +423,7 @@ mod x86_kernel {
                     Ok(image) => image,
                     Err(error) => {
                         let _ = writeln!(terminal, "Userspace: initramfs error: {error}\\n");
-                        shell(&mut terminal, &mut serial, &mut keyboard);
+                        shell(&mut terminal, &mut serial, &mut keyboard, &mut vfs);
                     }
                 };
                 terminal.write_str("Userspace: validating /bin/nexshell ELF...\\n");
@@ -395,7 +465,7 @@ mod x86_kernel {
             terminal.write_str("Userspace: no init ramdisk; staying in kernel shell.\\n");
         }
 
-        shell(&mut terminal, &mut serial, &mut keyboard)
+        shell(&mut terminal, &mut serial, &mut keyboard, &mut vfs)
     }
 
     #[panic_handler]
