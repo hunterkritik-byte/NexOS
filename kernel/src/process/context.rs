@@ -9,23 +9,11 @@ pub struct UserContext {
 }
 
 impl UserContext {
-    /// Selectors correspond to the GDT layout installed by arch::x86_64::gdt:
-    /// kernel code 0x08, kernel data 0x10, user code 0x1b, user data 0x23.
     pub const fn new(entry: u64, stack: u64) -> Self {
-        Self {
-            rip: entry,
-            rsp: stack,
-            rflags: 0x202,
-            cs: 0x1b,
-            ss: 0x23,
-        }
+        Self { rip: entry, rsp: stack, rflags: 0x202, cs: 0x1b, ss: 0x23 }
     }
 }
 
-/// Enter ring 3 through a hardware iretq frame.
-///
-/// The caller must have installed the matching GDT/TSS and activated the
-/// process CR3 before invoking this function.
 pub unsafe fn enter_user(ctx: &UserContext) -> ! {
     core::arch::asm!(
         "push {ss}",
@@ -34,12 +22,8 @@ pub unsafe fn enter_user(ctx: &UserContext) -> ! {
         "push {cs}",
         "push {rip}",
         "iretq",
-        ss = in(reg) ctx.ss,
-        rsp = in(reg) ctx.rsp,
-        rflags = in(reg) ctx.rflags,
-        cs = in(reg) ctx.cs,
-        rip = in(reg) ctx.rip,
-        options(noreturn)
+        ss=in(reg)ctx.ss, rsp=in(reg)ctx.rsp, rflags=in(reg)ctx.rflags,
+        cs=in(reg)ctx.cs, rip=in(reg)ctx.rip, options(noreturn)
     );
 }
 
@@ -51,8 +35,6 @@ pub struct KernelContext {
     pub cr3: u64,
 }
 
-/// Low-level cooperative context switch primitive. The scheduler decides which
-/// process owns the saved context; this routine only performs the CPU transition.
 pub unsafe fn switch_kernel_context(from: &mut KernelContext, to: &KernelContext) -> ! {
     core::arch::asm!(
         "mov [rdi], rsp",
