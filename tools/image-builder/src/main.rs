@@ -6,9 +6,7 @@ fn main() {
     let args: Vec<String> = env::args().collect();
 
     if args.len() != 4 {
-        eprintln!(
-            "usage: nexos-image-builder <kernel> <bios-output> <uefi-output>"
-        );
+        eprintln!("usage: nexos-image-builder <kernel> <bios-output> <uefi-output>");
         std::process::exit(2);
     }
 
@@ -17,9 +15,7 @@ fn main() {
     let uefi = PathBuf::from(&args[3]);
 
     if !kernel.exists() {
-        eprintln!("kernel does not exist: {}", kernel.display());
-        std::process::exit(1);
-    }
+        eprintln!("usage: nexos-image-builder <kernel> <bios-output> <uefi-output>");
 
     if let Some(parent) = bios.parent() {
         std::fs::create_dir_all(parent).expect("failed to create BIOS output directory");
