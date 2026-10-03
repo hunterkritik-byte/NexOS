@@ -334,8 +334,15 @@ mod x86_kernel {
 
         if let (Some(ramdisk_addr), len) = (boot_info.ramdisk_addr.into_option(), boot_info.ramdisk_len) {
             if len > 0 && len <= usize::MAX as u64 {
-                let image = unsafe {
+                let ramdisk = unsafe {
                     core::slice::from_raw_parts(ramdisk_addr as *const u8, len as usize)
+                };
+                let image = match process::find_init_elf(ramdisk) {
+                    Ok(image) => image,
+                    Err(error) => {
+                        let _ = writeln!(terminal, "Userspace: initramfs error: {error}\\n");
+                        shell(&mut terminal, &mut serial, &mut keyboard);
+                    }
                 };
                 terminal.write_str("Userspace: validating /bin/nexshell ELF...\\n");
                 if let Some(offset) = boot_info.physical_memory_offset.into_option() {
