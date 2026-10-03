@@ -10,6 +10,7 @@ mod x86_kernel {
     mod drivers;
     mod net;
     mod process;
+    mod fs;
 
     const VGA_BUFFER: usize = 0xb8000;
     const VGA_WIDTH: usize = 80;
@@ -234,6 +235,12 @@ mod x86_kernel {
         let mut terminal = Terminal::new();
         let mut serial = unsafe { Serial::new() };
         boot_splash(&mut terminal);
+
+        let mut vfs = fs::Vfs::<64>::new();
+        match fs::FileSystem::format_and_mount(&mut vfs) {
+            Ok(()) => terminal.write_str("Filesystem: VFS mounted (/bin /etc /home /tmp /var /dev /proc /sbin)\\n"),
+            Err(_) => terminal.write_str("Filesystem: mount failed\\n"),
+        }
 
         terminal.write_str("Detecting network hardware...\\n");
         let scanner = drivers::PciScanner::new();
