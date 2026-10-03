@@ -20,6 +20,6 @@ fn write(s:&[u8]){
 #[inline(always)]
 fn syscall(n:usize,a:usize,b:usize,c:usize)->usize{
     let ret:usize;
-    unsafe { core::arch::asm!("syscall",in("rax") n,in("rdi") a,in("rsi") b,in("rdx") c,lateout("rax") ret,clobber_abi("system")); }
+    unsafe { core::arch::asm!("int 0x80",in("rax") n,in("rdi") a,in("rsi") b,in("rdx") c,lateout("rax") ret,clobber_abi("system")); }
     ret
 }
