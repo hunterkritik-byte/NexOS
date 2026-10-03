@@ -102,6 +102,13 @@ mod x86_kernel {
         }
     }
 
+    impl core::fmt::Write for Terminal {
+        fn write_str(&mut self, s: &str) -> core::fmt::Result {
+            Terminal::write_str(self, s);
+            Ok(())
+        }
+    }
+
     struct Keyboard {
         status: Port<u8>,
         data: Port<u8>,
@@ -380,7 +387,7 @@ mod x86_kernel {
         boot_splash(&mut terminal);
 
         let mut vfs = fs::Vfs::<64>::new();
-        match fs::FileSystem::format_and_mount(&mut vfs) {
+        match vfs.format_and_mount() {
             Ok(()) => terminal.write_str("Filesystem: VFS mounted (/bin /etc /home /tmp /var /dev /proc /sbin)\n"),
             Err(_) => terminal.write_str("Filesystem: mount failed\n"),
         }
