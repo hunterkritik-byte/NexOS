@@ -113,10 +113,34 @@ impl<D: BlockDevice> PersistentFs<D> {
                 return Err(DiskError::InvalidBuffer);
             }
             if entry.used == 1 {
-                if entry.name().is_empty() || entry.size as usize > MAX_FILE_BYTES {
+                let name = entry.name();
+                if name.is_empty() || entry.size as usize > MAX_FILE_BYTES {
                     return Err(DiskError::InvalidBuffer);
                 }
-                if entry.directory == 0 {
+
+                // Names are single components. The only slash-containing name
+                // permitted by this prototype is the root directory "/".
+                if name == b"/" {
+                    if entry.directory == 0 || index != 0 {
+                        return Err(DiskError::InvalidBuffer);
+                    }
+                } else if name == b"." || name == b".." || name.contains(&b'/') {
+                    return Err(DiskError::InvalidBuffer);
+                }
+
+                // Require canonical zero padding after the first NUL. Without
+                // this, multiple byte representations could name the same file.
+                if let Some(nul) = entry.name.iter().position(|&b| b == 0) {
+                    if entry.name[nul + 1..].iter().any(|&b| b != 0) {
+                        return Err(DiskError::InvalidBuffer);
+                    }
+                }
+
+                if entry.directory == 1 {
+                    if entry.size != 0 || entry.first != 0 {
+                        return Err(DiskError::InvalidBuffer);
+                    }
+                } else {
                     let first = entry.first as u64;
                     let limit = first.checked_add(DATA_BLOCKS_PER_ENTRY).ok_or(DiskError::OutOfBounds)?;
                     if first < DATA_START || limit > self.disk.block_count() {
@@ -128,7 +152,7 @@ impl<D: BlockDevice> PersistentFs<D> {
                     }
                 }
                 for previous in &self.entries[..index] {
-                    if previous.used == 1 && previous.name() == entry.name() {
+                    if previous.used == 1 && previous.name() == name {
                         return Err(DiskError::InvalidBuffer);
                     }
                 }
@@ -150,6 +174,13 @@ impl<D: BlockDevice> PersistentFs<D> {
 
     fn insert_entry(&mut self, name: &[u8], directory: bool, size: usize) -> Result<usize, DiskError> {
         if name.is_empty() || name.len() > NAME_BYTES || name.contains(&0) {
+            return Err(DiskError::InvalidBuffer);
+        }
+        if name == b"/" {
+            if !directory {
+                return Err(DiskError::InvalidBuffer);
+            }
+        } else if name == b"." || name == b".." || name.contains(&b'/') {
             return Err(DiskError::InvalidBuffer);
         }
         if self.find(name).is_some() {
