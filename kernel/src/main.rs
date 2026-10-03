@@ -11,6 +11,7 @@ mod x86_kernel {
     mod net;
     mod process;
     mod fs;
+    mod terminal;
 
     const VGA_BUFFER: usize = 0xb8000;
     const VGA_WIDTH: usize = 80;
