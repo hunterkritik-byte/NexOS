@@ -42,3 +42,27 @@ pub unsafe fn enter_user(ctx: &UserContext) -> ! {
         options(noreturn)
     );
 }
+
+#[repr(C)]
+#[derive(Clone, Copy, Default)]
+pub struct KernelContext {
+    pub rsp: u64,
+    pub rip: u64,
+    pub cr3: u64,
+}
+
+/// Low-level cooperative context switch primitive. The scheduler decides which
+/// process owns the saved context; this routine only performs the CPU transition.
+pub unsafe fn switch_kernel_context(from: &mut KernelContext, to: &KernelContext) -> ! {
+    core::arch::asm!(
+        "mov [rdi], rsp",
+        "lea rax, [rip + 2f]",
+        "mov [rdi + 8], rax",
+        "mov rsp, [rsi]",
+        "mov cr3, [rsi + 16]",
+        "push qword ptr [rsi + 8]",
+        "ret",
+        "2:",
+        options(noreturn)
+    );
+}
