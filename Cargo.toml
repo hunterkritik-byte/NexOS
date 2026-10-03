@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["kernel"]
+members = ["hello_nexos","kernel"]
 
 [workspace.package]
 version = "0.1.0"
