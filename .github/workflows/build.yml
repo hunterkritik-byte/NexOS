@@ -1,4 +1,4 @@
-name: NexOS build and ISO
+name: NexOS CI
 
 on:
   push:
@@ -7,68 +7,105 @@ on:
   pull_request:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
     runs-on: ubuntu-24.04
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Install system tools
+      - name: Install host tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y qemu-system-x86 xorriso dosfstools
+          sudo apt-get install -y qemu-system-x86 ovmf xorriso mtools
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@nightly-2026-07-06
         with:
-          toolchain: nightly-2026-07-06
           targets: x86_64-unknown-none
+          components: llvm-tools-preview
 
-      - name: Build NexOS
+      - name: Cache Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Format
+        run: cargo fmt --all -- --check
+
+      - name: Check workspace
+        run: cargo check --workspace
+
+      - name: Build kernel
+        run: cargo build --release --package nexkernel --target x86_64-unknown-none
+
+      - name: Build boot images
         run: cargo build --release
 
-      - name: Create bootable ISO
-        shell: bash
+      - name: Locate generated images
         run: |
-          set -euo pipefail
-          mkdir -p dist/esp
-          UEFI_IMG="dist/NexOS-x86_64-UEFI.img"
+          mkdir -p dist
+          find target -type f \( -name 'nexos-uefi.img' -o -name 'nexos-bios.img' \) -print
+          UEFI=$(find target -type f -name 'nexos-uefi.img' | head -n1)
+          BIOS=$(find target -type f -name 'nexos-bios.img' | head -n1)
+          test -n "$UEFI"
+          test -n "$BIOS"
+          cp "$UEFI" dist/NexOS-x86_64-UEFI.img
+          cp "$BIOS" dist/NexOS-x86_64-BIOS.img
 
-          # Locate the first FAT EFI System Partition in the UEFI disk image.
-          START=$(fdisk -l -o Device,Start,Sectors,Type "$UEFI_IMG" | awk '$4 ~ /EFI/ {print $2; exit}')
-          SECTORS=$(fdisk -l -o Device,Start,Sectors,Type "$UEFI_IMG" | awk '$4 ~ /EFI/ {print $3; exit}')
-          test -n "$START" && test -n "$SECTORS"
-
-          dd if="$UEFI_IMG" of=dist/esp.img bs=512 skip="$START" count="$SECTORS" status=none
-          xorriso -as mkisofs             -iso-level 3             -volid NEXOS             -eltorito-platform efi             -e esp.img             -no-emul-boot             -o dist/NexOS-x86_64.iso             dist/esp.img
-
-          sha256sum dist/NexOS-x86_64.iso > dist/NexOS-x86_64.iso.sha256
-          ls -lh dist/
-
-      - name: Boot-test UEFI image
+      - name: Create desktop boot ISO
         run: |
-          timeout 20s qemu-system-x86_64             -drive format=raw,file=dist/NexOS-x86_64-UEFI.img             -serial stdio             -display none             -no-reboot || test $? -eq 124
+          set -euxo pipefail
+          rm -rf iso-root
+          mkdir -p iso-root/EFI/BOOT
+          mcopy -i dist/NexOS-x86_64-UEFI.img ::/EFI/BOOT/BOOTX64.EFI iso-root/EFI/BOOT/BOOTX64.EFI || true
+          if [ ! -f iso-root/EFI/BOOT/BOOTX64.EFI ]; then
+            echo "Could not extract EFI bootloader from image"
+            exit 1
+          fi
+          xorriso -as mkisofs \
+            -iso-level 3 \
+            -volid NEXOS \
+            -eltorito-platform efi \
+            -e EFI/BOOT/BOOTX64.EFI \
+            -no-emul-boot \
+            -o dist/NexOS-x86_64.iso \
+            iso-root
+          sha256sum dist/NexOS-x86_64.iso > dist/SHA256SUMS
 
-      - name: Upload development ISO
+      - name: Boot-test ISO
+        run: |
+          timeout 30s qemu-system-x86_64 \
+            -machine q35 \
+            -m 1G \
+            -cdrom dist/NexOS-x86_64.iso \
+            -serial stdio \
+            -display none \
+            -no-reboot 2>&1 | tee qemu-iso.log || test ${PIPESTATUS[0]} -eq 124
+          grep -q "NexKernel" qemu-iso.log
+
+      - name: Upload ISO artifact
         uses: actions/upload-artifact@v4
         with:
-          name: NexOS-x86_64-development
+          name: NexOS-x86_64-desktop
           path: |
             dist/NexOS-x86_64.iso
-            dist/NexOS-x86_64.iso.sha256
+            dist/SHA256SUMS
             dist/NexOS-x86_64-UEFI.img
             dist/NexOS-x86_64-BIOS.img
 
-      - name: Upload release ISO
+      - name: Publish GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
+          generate_release_notes: true
           files: |
             dist/NexOS-x86_64.iso
-            dist/NexOS-x86_64.iso.sha256
+            dist/SHA256SUMS
             dist/NexOS-x86_64-UEFI.img
             dist/NexOS-x86_64-BIOS.img
-          generate_release_notes: true
