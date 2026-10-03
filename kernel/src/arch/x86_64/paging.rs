@@ -1,9 +1,9 @@
 use x86_64::{
+    PhysAddr, VirtAddr,
     structures::paging::{
-        mapper::MapToError, FrameAllocator, Mapper, Page, PageTable, PageTableFlags,
-        PhysFrame, Size4KiB,
+        FrameAllocator, Mapper, Page, PageTable, PageTableFlags, PhysFrame, Size4KiB,
+        OffsetPageTable, mapper::MapToError,
     },
-    VirtAddr,
 };
 
 pub const KERNEL_FLAGS: PageTableFlags =
@@ -11,18 +11,28 @@ pub const KERNEL_FLAGS: PageTableFlags =
 pub const USER_CODE_FLAGS: PageTableFlags =
     PageTableFlags::PRESENT | PageTableFlags::USER_ACCESSIBLE;
 pub const USER_DATA_FLAGS: PageTableFlags =
-    PageTableFlags::PRESENT
-        | PageTableFlags::WRITABLE
-        | PageTableFlags::USER_ACCESSIBLE;
+    PageTableFlags::PRESENT | PageTableFlags::WRITABLE | PageTableFlags::USER_ACCESSIBLE;
+
+pub unsafe fn active_level_4_table(physical_memory_offset: VirtAddr) -> &'static mut PageTable {
+    let level_4 = x86_64::registers::control::Cr3::read().0;
+    let phys = level_4.start_address();
+    let virt = physical_memory_offset + phys.as_u64();
+    &mut *(virt.as_mut_ptr())
+}
+
+pub unsafe fn init_mapper(
+    physical_memory_offset: VirtAddr,
+) -> OffsetPageTable<'static> {
+    let table = active_level_4_table(physical_memory_offset);
+    OffsetPageTable::new(table, physical_memory_offset)
+}
 
 pub struct AddressSpace {
     pub root: PhysFrame<Size4KiB>,
 }
 
 impl AddressSpace {
-    pub const fn new(root: PhysFrame<Size4KiB>) -> Self {
-        Self { root }
-    }
+    pub const fn new(root: PhysFrame<Size4KiB>) -> Self { Self { root } }
 
     pub fn map_user_page<M, A>(
         &self,
@@ -36,7 +46,7 @@ impl AddressSpace {
         M: Mapper<Size4KiB>,
         A: FrameAllocator<Size4KiB>,
     {
-        unsafe { mapper.map_to(page, frame, flags, allocator)?.flush() };
+        unsafe { mapper.map_to(page, frame, flags, allocator)?.flush(); }
         Ok(())
     }
 
