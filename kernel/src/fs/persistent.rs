@@ -1,0 +1,13 @@
+use super::disk::{BlockDevice,DiskError};
+const MAGIC:u32=0x4e455846; const MAX_FILES:usize=32; const NAME:usize=64; const DATA_BLOCKS:usize=7;
+#[derive(Clone,Copy)] struct Dirent{used:u8,directory:u8,name:[u8;NAME],size:u32,first:u32}
+impl Dirent{const fn empty()->Self{Self{used:0,directory:0,name:[0;NAME],size:0,first:0}}}
+pub struct PersistentFs<D:BlockDevice>{pub disk:D,entries:[Dirent;MAX_FILES]}
+impl<D:BlockDevice> PersistentFs<D>{
+ pub fn mount(mut disk:D)->Result<Self,DiskError>{let mut b=[0;512];disk.read_block(0,&mut b)?;let mut fs=Self{disk,entries:[Dirent::empty();MAX_FILES]};if u32::from_le_bytes([b[0],b[1],b[2],b[3]])==MAGIC{fs.load(&b)}else{fs.format()?}Ok(fs)}
+ fn format(&mut self)->Result<(),DiskError>{self.entries[0].used=1;self.entries[0].directory=1;self.entries[0].name[0]=b'/';for (i,n) in [b"bin",b"etc",b"home",b"tmp"].iter().enumerate(){let e=i+1;self.entries[e].used=1;self.entries[e].directory=1;self.entries[e].name[..n.len()].copy_from_slice(n);}self.sync()}
+ fn load(&mut self,b:&[u8;512]){let mut p=8;for e in 0..MAX_FILES{if p+74>512{break}self.entries[e].used=b[p];self.entries[e].directory=b[p+1];self.entries[e].name.copy_from_slice(&b[p+2..p+66]);self.entries[e].size=u32::from_le_bytes(b[p+66..p+70].try_into().unwrap());self.entries[e].first=u32::from_le_bytes(b[p+70..p+74].try_into().unwrap());p+=74;}}
+ fn sync(&mut self)->Result<(),DiskError>{let mut b=[0;512];b[..4].copy_from_slice(&MAGIC.to_le_bytes());let mut p=8;for e in &self.entries{if p+74>512{break}b[p]=e.used;b[p+1]=e.directory;b[p+2..p+66].copy_from_slice(&e.name);b[p+66..p+70].copy_from_slice(&e.size.to_le_bytes());b[p+70..p+74].copy_from_slice(&e.first.to_le_bytes());p+=74;}self.disk.write_block(0,&b)}
+ pub fn mkdir(&mut self,name:&[u8])->Result<(),DiskError>{if name.len()>NAME{return Err(DiskError::InvalidBuffer)}let i=self.entries.iter().position(|e|e.used==0).ok_or(DiskError::OutOfBounds)?;self.entries[i].used=1;self.entries[i].directory=1;self.entries[i].name[..name.len()].copy_from_slice(name);self.sync()}
+ pub fn create(&mut self,name:&[u8],data:&[u8])->Result<(),DiskError>{if name.len()>NAME||data.len()>DATA_BLOCKS*512{return Err(DiskError::InvalidBuffer)}let i=self.entries.iter().position(|e|e.used==0).ok_or(DiskError::OutOfBounds)?;self.entries[i].used=1;self.entries[i].name[..name.len()].copy_from_slice(name);let first=1+i*DATA_BLOCKS;self.entries[i].first=first as u32;self.entries[i].size=data.len() as u32;for n in 0..DATA_BLOCKS{let mut b=[0;512];let s=n*512;let e=(s+512).min(data.len());if s<e{b[..e-s].copy_from_slice(&data[s..e]);}self.disk.write_block((first+n) as u64,&b)?;}self.sync()}
+}
