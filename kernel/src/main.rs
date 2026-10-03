@@ -3,7 +3,7 @@
 
 #[cfg(target_arch = "x86_64")]
 mod x86_kernel {
-    use bootloader_api::{entry_point, BootInfo};
+    use bootloader_api::{BootInfo, entry_point};
     use core::fmt::Write;
     use uart_16550::{Config, Uart16550Tty};
 
@@ -11,8 +11,7 @@ mod x86_kernel {
 
     fn serial() -> Uart16550Tty<uart_16550::backend::PioBackend> {
         unsafe {
-            Uart16550Tty::new_port(0x3F8, Config::default())
-                .expect("failed to initialize COM1")
+            Uart16550Tty::new_port(0x3F8, Config::default()).expect("failed to initialize COM1")
         }
     }
 
