@@ -9,19 +9,23 @@ pub struct UserContext {
 }
 
 impl UserContext {
+    /// Selectors correspond to the GDT layout installed by arch::x86_64::gdt:
+    /// kernel code 0x08, kernel data 0x10, user code 0x1b, user data 0x23.
     pub const fn new(entry: u64, stack: u64) -> Self {
         Self {
             rip: entry,
             rsp: stack,
             rflags: 0x202,
-            cs: 0x23,
-            ss: 0x1b,
+            cs: 0x1b,
+            ss: 0x23,
         }
     }
 }
 
-/// Enter ring 3 through an iretq frame. GDT selectors must match the kernel's
-/// user-code/user-data descriptors before this is called.
+/// Enter ring 3 through a hardware iretq frame.
+///
+/// The caller must have installed the matching GDT/TSS and activated the
+/// process CR3 before invoking this function.
 pub unsafe fn enter_user(ctx: &UserContext) -> ! {
     core::arch::asm!(
         "push {ss}",
