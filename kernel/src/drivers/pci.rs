@@ -51,12 +51,12 @@ impl PciScanner {
     /// Uses legacy x86 PCI configuration I/O ports and must only run in ring 0.
     pub unsafe fn scan_network(&self, out: &mut [Option<PciDevice>]) -> usize {
         let mut count = 0usize;
-        scan(|device| {
+        unsafe { scan(|device| {
             if device.class == 0x02 && count < out.len() {
                 out[count] = Some(device);
                 count += 1;
             }
-        });
+        }); }
         count
     }
 }
