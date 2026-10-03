@@ -1,0 +1,24 @@
+[package]
+name = "nexkernel"
+version = "0.1.0"
+edition = "2024"
+authors = ["Kritik Bhattarai"]
+license = "Apache-2.0"
+description = "NexKernel, the NexOS kernel."
+
+[[bin]]
+name = "nexkernel"
+path = "src/main.rs"
+
+[dependencies]
+bootloader_api = "0.11.17"
+uart_16550 = "0.6.0"
+x86_64 = "0.15.2"
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"
+lto = true
+codegen-units = 1
