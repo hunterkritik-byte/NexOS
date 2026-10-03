@@ -54,6 +54,11 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y qemu-system-x86 ovmf xorriso
+          echo "Installed OVMF files:"
+          find /usr/share/OVMF /usr/share/edk2 -maxdepth 2 -type f 2>/dev/null | sort || true
+          OVMF_CODE=$(find /usr/share/OVMF /usr/share/edk2 -type f \\( -name 'OVMF_CODE_4M.fd' -o -name 'OVMF_CODE.fd' -o -name 'OVMF_CODE.ms.fd' \\) 2>/dev/null | head -n1)
+          test -n "$OVMF_CODE" || { echo "OVMF firmware not found"; exit 1; }
+          echo "OVMF_CODE=$OVMF_CODE" >> "$GITHUB_ENV"
 
       - name: Build kernel
         run: |
@@ -87,7 +92,7 @@ jobs:
         run: |
           timeout 10s qemu-system-x86_64 \
             -drive format=raw,file=dist/NexOS-x86_64-uefi.img \
-            -bios /usr/share/OVMF/OVMF_CODE_4M.fd \
+            -bios "$OVMF_CODE" \
             -serial stdio \
             -display none \
             -no-reboot \
