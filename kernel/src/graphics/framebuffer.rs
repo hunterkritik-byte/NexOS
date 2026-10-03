@@ -48,3 +48,14 @@ impl Framebuffer {
         }
     }
 }
+
+
+impl super::compositor::PixelCanvas for Framebuffer {
+    fn dimensions(&self) -> (usize, usize) {
+        (self.info.width, self.info.height)
+    }
+
+    fn put_pixel(&mut self, x: usize, y: usize, color: [u8; 3]) {
+        Framebuffer::put_pixel(self, x, y, color);
+    }
+}
