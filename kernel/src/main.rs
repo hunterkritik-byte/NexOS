@@ -15,7 +15,6 @@ fn serial() -> SerialPort {
 
 fn kernel_main(_boot_info: &'static mut BootInfo) -> ! {
     let mut serial = serial();
-
     writeln!(serial, "NexKernel {}", env!("CARGO_PKG_VERSION")).ok();
     writeln!(serial, "architecture: x86_64").ok();
     writeln!(serial, "status: kernel entry reached").ok();
