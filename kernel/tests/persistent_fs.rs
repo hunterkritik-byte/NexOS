@@ -133,3 +133,60 @@ fn memory_disk_rejects_out_of_range_blocks() {
     assert_eq!(disk.read_block(4, &mut [0u8; 512]), Err(DiskError::OutOfBounds));
     assert_eq!(disk.write_block(4, &[0u8; 512]), Err(DiskError::OutOfBounds));
 }
+
+#[test]
+fn rejects_path_traversal_and_multi_component_names() {
+    let mut fs = PersistentFs::format(MemoryDisk::<MIN_BLOCKS>::new()).unwrap();
+
+    for name in [&b"."[..], &b".."[..], &b"../escape"[..], &b"dir/file"[..], &b"/absolute"[..]] {
+        assert_eq!(
+            fs.create(name, b"no"),
+            Err(DiskError::InvalidBuffer),
+            "accepted invalid file name: {:?}",
+            name
+        );
+        assert_eq!(
+            fs.mkdir(name),
+            Err(DiskError::InvalidBuffer),
+            "accepted invalid directory name: {:?}",
+            name
+        );
+    }
+}
+
+#[test]
+fn mount_rejects_directory_entries_with_file_metadata() {
+    let fs = PersistentFs::format(MemoryDisk::<MIN_BLOCKS>::new()).unwrap();
+    let mut disk = fs.disk;
+
+    // Entry 1 is the default "bin" directory. Its size field begins at
+    // header (8) + entry size (74) + fields before size (66).
+    let mut sector = [0u8; 512];
+    disk.read_block(0, &mut sector).unwrap();
+    let size_offset = 8 + 74 + 66;
+    sector[size_offset..size_offset + 4].copy_from_slice(&1u32.to_le_bytes());
+    disk.write_block(0, &sector).unwrap();
+
+    assert!(matches!(
+        PersistentFs::mount(disk),
+        Err(DiskError::InvalidBuffer)
+    ));
+}
+
+#[test]
+fn mount_rejects_noncanonical_name_padding() {
+    let fs = PersistentFs::format(MemoryDisk::<MIN_BLOCKS>::new()).unwrap();
+    let mut disk = fs.disk;
+
+    // "bin" is entry 1. Bytes after its terminating NUL must all be zero.
+    let mut sector = [0u8; 512];
+    disk.read_block(0, &mut sector).unwrap();
+    let name_offset = 8 + 74 + 2;
+    sector[name_offset + 4] = b'x';
+    disk.write_block(0, &sector).unwrap();
+
+    assert!(matches!(
+        PersistentFs::mount(disk),
+        Err(DiskError::InvalidBuffer)
+    ));
+}
