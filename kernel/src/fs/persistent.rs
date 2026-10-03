@@ -6,7 +6,7 @@ const MAX_FILES: usize = 32;
 const NAME_BYTES: usize = 64;
 const ENTRY_BYTES: usize = 74;
 const METADATA_BYTES: usize = 8 + MAX_FILES * ENTRY_BYTES;
-const METADATA_BLOCKS: usize = METADATA_BYTES.div_ceil(512);
+const METADATA_BLOCKS: usize = (METADATA_BYTES + 511) / 512;
 const DATA_START: u64 = 8;
 const DATA_BLOCKS_PER_ENTRY: u64 = 7;
 const MAX_FILE_BYTES: usize = DATA_BLOCKS_PER_ENTRY as usize * 512;
@@ -105,13 +105,9 @@ impl<D: BlockDevice> PersistentFs<D> {
                     if first < DATA_START || limit > self.disk.block_count() {
                         return Err(DiskError::OutOfBounds);
                     }
-                    let slot = first - DATA_START;
-                    if slot % DATA_BLOCKS_PER_ENTRY != 0 {
+                    let expected_first = DATA_START + index as u64 * DATA_BLOCKS_PER_ENTRY;
+                    if first != expected_first {
                         return Err(DiskError::InvalidBuffer);
-                    }
-                    let slot_index = slot / DATA_BLOCKS_PER_ENTRY;
-                    if slot_index >= MAX_FILES as u64 {
-                        return Err(DiskError::OutOfBounds);
                     }
                 }
                 for previous in &self.entries[..index] {
