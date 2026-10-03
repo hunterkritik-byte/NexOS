@@ -2,8 +2,9 @@ use x86_64::{PrivilegeLevel, VirtAddr, structures::idt::InterruptDescriptorTable
 
 #[repr(C)]
 pub struct Registers {
-    pub rax: u64, pub rdi: u64, pub rsi: u64, pub rdx: u64,
-    pub r10: u64, pub r8: u64, pub r9: u64,
+    // Layout matches the assembly stack frame (top of stack first).
+    pub r9: u64, pub r8: u64, pub r10: u64, pub rdx: u64,
+    pub rsi: u64, pub rdi: u64, pub rax: u64,
 }
 
 pub const SYS_EXIT: u64 = 0;
@@ -23,13 +24,13 @@ core::arch::global_asm!(
     "push r9",
     "mov rdi, rsp",
     "call {dispatch}",
-    "add rsp, 8",
-    "pop rdi",
-    "pop rsi",
-    "pop rdx",
-    "pop r10",
-    "pop r8",
     "pop r9",
+    "pop r8",
+    "pop r10",
+    "pop rdx",
+    "pop rsi",
+    "pop rdi",
+    "add rsp, 8",
     "iretq",
     dispatch = sym syscall_dispatch_entry,
 );
