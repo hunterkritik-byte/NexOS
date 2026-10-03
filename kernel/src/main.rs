@@ -3,7 +3,7 @@
 
 #[cfg(target_os = "none")]
 mod x86_kernel {
-    use bootloader_api::{entry_point, BootInfo};
+    use bootloader_api::{BootInfo, entry_point};
     use core::fmt::Write;
     use uart_16550::{Config, Uart16550Tty};
 
