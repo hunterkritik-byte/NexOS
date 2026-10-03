@@ -16,7 +16,7 @@
 - **Bluetooth:** not implemented. It needs a supported controller transport/driver and HCI plus higher-level Bluetooth protocols.
 - **Graphics:** framebuffer and windowing foundations exist; this is not yet a complete desktop environment.
 
-See [docs/ROADMAP.md](docs/ROADMAP.md) for the tracked status, [docs/SHELL.md](docs/SHELL.md) for shell commands and filesystem limitations, and [docs/NETWORKING.md](docs/NETWORKING.md) for the Wi-Fi, hotspot, Bluetooth, and Ethernet plan.
+See [docs/ROADMAP.md](docs/ROADMAP.md) for tracked status, [docs/SHELL.md](docs/SHELL.md) for shell limits, [docs/NETWORKING.md](docs/NETWORKING.md) for network plans, and [docs/OS-READINESS.md](docs/OS-READINESS.md) for the staged path toward a general-purpose OS.
 
 ## Architecture
 
