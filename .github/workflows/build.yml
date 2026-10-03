@@ -20,7 +20,7 @@ jobs:
         uses: dtolnay/rust-toolchain@nightly
         with:
           targets: x86_64-unknown-none
-          components: rustfmt, llvm-tools-preview
+          components: rustfmt, llvm-tools-preview, rust-src
 
       - name: Format
         run: cargo fmt --all -- --check
@@ -48,7 +48,7 @@ jobs:
         uses: dtolnay/rust-toolchain@nightly
         with:
           targets: x86_64-unknown-none
-          components: rustfmt, llvm-tools-preview
+          components: rustfmt, llvm-tools-preview, rust-src
 
       - name: Install QEMU and ISO tools
         run: |
