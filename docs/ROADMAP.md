@@ -38,7 +38,7 @@ This roadmap distinguishes source-code foundations from features that have been 
 - [ ] Add robust keyboard layouts, shift/caps handling, and reliable line editing
 - [ ] Connect userspace input/read syscalls to a real terminal
 - [ ] Make NexShell an interactive shell instead of a print-and-yield stub
-- [ ] Add working VFS-backed `pwd`, `ls`, `cd`, `cat`, and file operations
+- [x] Add basic VFS-backed `cat`, `touch`, `mkdir`, and `write` shell commands (in-memory only)\n- [ ] Add directory-aware `ls`, functional `cd`, and a broader set of file operations
 - [ ] Add init/service lifecycle and core utilities
 
 ## Phase 4 — Storage
