@@ -9,6 +9,7 @@ mod x86_kernel {
 
     mod drivers;
     mod net;
+    mod process;
 
     const VGA_BUFFER: usize = 0xb8000;
     const VGA_WIDTH: usize = 80;
