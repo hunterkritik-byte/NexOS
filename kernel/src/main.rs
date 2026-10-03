@@ -1,9 +1,9 @@
-#![cfg_attr(target_arch = "x86_64", no_std)]
-#![cfg_attr(target_arch = "x86_64", no_main)]
+#![cfg_attr(target_os = "none", no_std)]
+#![cfg_attr(target_os = "none", no_main)]
 
-#[cfg(target_arch = "x86_64")]
+#[cfg(target_os = "none")]
 mod x86_kernel {
-    use bootloader_api::{BootInfo, entry_point};
+    use bootloader_api::{entry_point, BootInfo};
     use core::fmt::Write;
     use uart_16550::{Config, Uart16550Tty};
 
@@ -37,7 +37,7 @@ mod x86_kernel {
     }
 }
 
-#[cfg(not(target_arch = "x86_64"))]
+#[cfg(not(target_os = "none"))]
 fn main() {
-    // The kernel is x86_64-only. This host stub lets cargo check run on ARM64 Termux.
+    // The kernel is x86_64-only. This host stub lets cargo check run on the build host.
 }
