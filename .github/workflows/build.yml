@@ -75,7 +75,7 @@ jobs:
 
       - name: Validate BIOS image
         run: |
-          timeout 10s qemu-system-x86_64 \
+          timeout 10s qemu-system-x86_64 -L /usr/share/OVMF \
             -drive format=raw,file=dist/NexOS-x86_64-bios.img \
             -serial stdio \
             -display none \
