@@ -2,12 +2,18 @@
 resolver = "3"
 members = ["kernel"]
 
-[package]
-name = "nexos"
+[workspace.package]
 version = "0.1.0"
 edition = "2024"
 authors = ["Kritik Bhattarai"]
 license = "Apache-2.0"
+
+[package]
+name = "nexos"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
 description = "NexOS operating system workspace."
 
 [dependencies]
