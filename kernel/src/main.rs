@@ -5,13 +5,15 @@
 mod x86_kernel {
     use bootloader_api::{entry_point, BootInfo};
     use core::fmt::Write;
-    use x86_64::instructions::port::Port;
+    use x86_64::{VirtAddr, instructions::port::Port};
+    use crate::x86_kernel::arch::x86_64::{boot_memory::BootInfoFrameAllocator, paging};
 
     mod drivers;
     mod net;
     mod process;
     mod fs;
     mod terminal;
+    mod arch { pub mod x86_64; }
 
     const VGA_BUFFER: usize = 0xb8000;
     const VGA_WIDTH: usize = 80;
@@ -232,8 +234,22 @@ mod x86_kernel {
 
     entry_point!(kernel_main);
 
-    fn kernel_main(_boot_info: &'static mut BootInfo) -> ! {
+    fn kernel_main(boot_info: &'static mut BootInfo) -> ! {
         let mut terminal = Terminal::new();
+        terminal.write_str("Memory: initializing bootloader page map...\\n");
+        if let Some(offset) = boot_info.physical_memory_offset.into_option() {
+            let mut frame_allocator = BootInfoFrameAllocator::new(&boot_info.memory_regions);
+            let mut mapper = unsafe { paging::init_mapper(VirtAddr::new(offset)) };
+            terminal.write_str("Memory: active L4 mapper connected; usable-frame allocator online.\\n");
+            if frame_allocator.allocate_frame().is_some() {
+                terminal.write_str("Memory: verified usable physical frame allocation.\\n");
+            } else {
+                terminal.write_str("Memory: no usable physical frames reported.\\n");
+            }
+            let _ = &mut mapper;
+        } else {
+            terminal.write_str("Memory: physical-memory mapping unavailable; isolation setup deferred.\\n");
+        }
         let mut serial = unsafe { Serial::new() };
         boot_splash(&mut terminal);
 
