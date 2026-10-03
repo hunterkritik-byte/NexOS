@@ -3,7 +3,8 @@
 
 #[cfg(target_os = "none")]
 mod x86_kernel {
-    use bootloader_api::{entry_point, BootInfo};
+    use bootloader_api::{entry_point, BootInfo, BootloaderConfig};
+    use bootloader_api::config::Mapping;
     use core::fmt::Write;
     use x86_64::{VirtAddr, instructions::port::Port};
     use crate::x86_kernel::arch::x86_64::{boot_memory::BootInfoFrameAllocator, paging};
@@ -266,7 +267,13 @@ mod x86_kernel {
         }
     }
 
-    entry_point!(kernel_main);
+    pub static BOOTLOADER_CONFIG: BootloaderConfig = {
+        let mut config = BootloaderConfig::new_default();
+        config.mappings.physical_memory = Some(Mapping::Dynamic);
+        config
+    };
+
+    entry_point!(kernel_main, config = &BOOTLOADER_CONFIG);
 
     fn kernel_main(boot_info: &'static mut BootInfo) -> ! {
         let mut terminal = Terminal::new();
