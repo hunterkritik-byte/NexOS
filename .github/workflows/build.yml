@@ -12,45 +12,114 @@ permissions:
 jobs:
   kernel:
     runs-on: ubuntu-24.04
+
     steps:
       - uses: actions/checkout@v4
+
       - name: Install Rust nightly
         uses: dtolnay/rust-toolchain@nightly
         with:
           targets: x86_64-unknown-none
-          components: llvm-tools-preview
+          components: rustfmt, llvm-tools-preview
+
       - name: Format
         run: cargo fmt --all -- --check
+
       - name: Check workspace
         run: cargo check --workspace
+
       - name: Build kernel
         run: cargo build --release --package nexkernel --target x86_64-unknown-none
 
-  boot-image:
-    needs: kernel
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install host tools
-        run: sudo apt-get update && sudo apt-get install -y qemu-system-x86 ovmf xorriso mtools
-      - name: Install Rust nightly
-        uses: dtolnay/rust-toolchain@nightly
-        with:
-          targets: x86_64-unknown-none
-          components: llvm-tools-preview
-      - name: Build bootloader image tooling
-        run: |
-          cargo install bootimage --version 0.10.0
-      - name: Build kernel
-        run: cargo build --release --package nexkernel --target x86_64-unknown-none
-      - name: Create boot image
-        run: |
-          mkdir -p dist
-          echo "Boot image generation will be enabled once the installer/image builder is part of the NexOS workspace."
-          echo "The kernel build is the release gate for this development stage."
-      - name: Upload kernel artifact
+      - name: Upload kernel
         uses: actions/upload-artifact@v4
         with:
           name: NexOS-x86_64-kernel
           path: target/x86_64-unknown-none/release/nexkernel
 
+  boot-image:
+    needs: kernel
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust nightly
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          targets: x86_64-unknown-none
+          components: rustfmt, llvm-tools-preview
+
+      - name: Install QEMU and ISO tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-system-x86 ovmf xorriso
+
+      - name: Build kernel
+        run: |
+          cargo build \
+            --release \
+            --package nexkernel \
+            --target x86_64-unknown-none
+
+      - name: Build NexOS boot images
+        run: |
+          mkdir -p dist
+          cargo run \
+            --release \
+            --package nexos-image-builder \
+            -- \
+            target/x86_64-unknown-none/release/nexkernel \
+            dist/NexOS-x86_64-bios.img \
+            dist/NexOS-x86_64-uefi.img
+
+      - name: Validate BIOS image
+        run: |
+          timeout 10s qemu-system-x86_64 \
+            -drive format=raw,file=dist/NexOS-x86_64-bios.img \
+            -serial stdio \
+            -display none \
+            -no-reboot \
+            -no-shutdown \
+            || test $? -eq 124
+
+      - name: Validate UEFI image
+        run: |
+          timeout 10s qemu-system-x86_64 \
+            -drive format=raw,file=dist/NexOS-x86_64-uefi.img \
+            -bios /usr/share/OVMF/OVMF_CODE_4M.fd \
+            -serial stdio \
+            -display none \
+            -no-reboot \
+            -no-shutdown \
+            || test $? -eq 124
+
+      - name: Generate ISO
+        run: |
+          mkdir -p iso-root/EFI/BOOT
+          mkdir -p iso-root/boot
+
+          cp dist/NexOS-x86_64-uefi.img iso-root/boot/NexOS-UEFI.img
+          cp dist/NexOS-x86_64-bios.img iso-root/boot/NexOS-BIOS.img
+
+          xorriso \
+            -as mkisofs \
+            -iso-level 3 \
+            -volid "NEXOS" \
+            -o dist/NexOS-x86_64.iso \
+            iso-root
+
+      - name: Generate checksums
+        run: |
+          cd dist
+          sha256sum * > SHA256SUMS
+
+      - name: Upload NexOS images
+        uses: actions/upload-artifact@v4
+        with:
+          name: NexOS-x86_64-images
+          path: |
+            dist/NexOS-x86_64.iso
+            dist/NexOS-x86_64-bios.img
+            dist/NexOS-x86_64-uefi.img
+            dist/SHA256SUMS

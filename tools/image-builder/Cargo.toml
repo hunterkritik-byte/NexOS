@@ -1,0 +1,9 @@
+[package]
+name = "nexos-image-builder"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+bootloader = "0.11.17"

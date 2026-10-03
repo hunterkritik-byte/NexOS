@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["hello_nexos","kernel"]
+members = ["hello_nexos", "kernel", "tools/image-builder"]
 
 [workspace.package]
 version = "0.1.0"
