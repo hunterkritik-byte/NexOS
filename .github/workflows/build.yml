@@ -64,6 +64,11 @@ jobs:
           echo "Using OVMF firmware: $OVMF_CODE"
           echo "OVMF_CODE=$OVMF_CODE" >> "$GITHUB_ENV"
 
+      - name: Build NexShell userspace ELF
+        run: |
+          cargo build --release --package nexshell --target x86_64-unknown-none
+          test -s target/x86_64-unknown-none/release/nexshell
+
       - name: Build kernel
         run: |
           cargo build \
