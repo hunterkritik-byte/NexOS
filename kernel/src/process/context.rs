@@ -63,6 +63,9 @@ pub unsafe fn switch_kernel_context(from: &mut KernelContext, to: &KernelContext
         "push qword ptr [rsi + 8]",
         "ret",
         "2:",
+        in("rdi") from,
+        in("rsi") to,
+        out("rax") _,
         options(noreturn)
     );
 }
