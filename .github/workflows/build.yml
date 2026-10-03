@@ -94,14 +94,19 @@ jobs:
 
       - name: Validate UEFI image
         run: |
+          OVMF_VARS="$(find /usr/share/OVMF /usr/share/edk2 -type f \( -name 'OVMF_VARS_4M.fd' -o -name 'OVMF_VARS.fd' -o -name 'OVMF_VARS_4M.ms.fd' \) 2>/dev/null | head -n1)"
+          test -n "$OVMF_VARS"
+          cp "$OVMF_VARS" "$RUNNER_TEMP/OVMF_VARS.fd"
           timeout 10s qemu-system-x86_64 \
+            -drive if=pflash,format=raw,readonly=on,file="$OVMF_CODE" \
+            -drive if=pflash,format=raw,file="$RUNNER_TEMP/OVMF_VARS.fd" \
             -drive format=raw,file=dist/NexOS-x86_64-uefi.img \
-            -bios "$OVMF_CODE" \
             -serial stdio \
             -display none \
             -no-reboot \
             -no-shutdown \
             || test $? -eq 124
+
 
       - name: Generate ISO
         run: |
