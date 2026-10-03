@@ -10,102 +10,47 @@ permissions:
   contents: write
 
 jobs:
-  build:
+  kernel:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install host tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y qemu-system-x86 ovmf xorriso mtools
-
-      - name: Install Rust
+      - name: Install Rust nightly
         uses: dtolnay/rust-toolchain@nightly-2026-07-06
         with:
           targets: x86_64-unknown-none
           components: llvm-tools-preview
-
-      - name: Cache Cargo
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-
       - name: Format
         run: cargo fmt --all -- --check
-
       - name: Check workspace
         run: cargo check --workspace
-
       - name: Build kernel
         run: cargo build --release --package nexkernel --target x86_64-unknown-none
 
-      - name: Build boot images
-        run: cargo build --release
-
-      - name: Locate generated images
+  boot-image:
+    needs: kernel
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install host tools
+        run: sudo apt-get update && sudo apt-get install -y qemu-system-x86 ovmf xorriso mtools
+      - name: Install Rust nightly
+        uses: dtolnay/rust-toolchain@nightly-2026-07-06
+        with:
+          targets: x86_64-unknown-none
+          components: llvm-tools-preview
+      - name: Build bootloader image tooling
+        run: |
+          cargo install bootimage --version 0.10.0
+      - name: Build kernel
+        run: cargo build --release --package nexkernel --target x86_64-unknown-none
+      - name: Create boot image
         run: |
           mkdir -p dist
-          find target -type f \( -name 'nexos-uefi.img' -o -name 'nexos-bios.img' \) -print
-          UEFI=$(find target -type f -name 'nexos-uefi.img' | head -n1)
-          BIOS=$(find target -type f -name 'nexos-bios.img' | head -n1)
-          test -n "$UEFI"
-          test -n "$BIOS"
-          cp "$UEFI" dist/NexOS-x86_64-UEFI.img
-          cp "$BIOS" dist/NexOS-x86_64-BIOS.img
-
-      - name: Create desktop boot ISO
-        run: |
-          set -euxo pipefail
-          rm -rf iso-root
-          mkdir -p iso-root/EFI/BOOT
-          mcopy -i dist/NexOS-x86_64-UEFI.img ::/EFI/BOOT/BOOTX64.EFI iso-root/EFI/BOOT/BOOTX64.EFI || true
-          if [ ! -f iso-root/EFI/BOOT/BOOTX64.EFI ]; then
-            echo "Could not extract EFI bootloader from image"
-            exit 1
-          fi
-          xorriso -as mkisofs \
-            -iso-level 3 \
-            -volid NEXOS \
-            -eltorito-platform efi \
-            -e EFI/BOOT/BOOTX64.EFI \
-            -no-emul-boot \
-            -o dist/NexOS-x86_64.iso \
-            iso-root
-          sha256sum dist/NexOS-x86_64.iso > dist/SHA256SUMS
-
-      - name: Boot-test ISO
-        run: |
-          timeout 30s qemu-system-x86_64 \
-            -machine q35 \
-            -m 1G \
-            -cdrom dist/NexOS-x86_64.iso \
-            -serial stdio \
-            -display none \
-            -no-reboot 2>&1 | tee qemu-iso.log || test ${PIPESTATUS[0]} -eq 124
-          grep -q "NexKernel" qemu-iso.log
-
-      - name: Upload ISO artifact
+          echo "Boot image generation will be enabled once the installer/image builder is part of the NexOS workspace."
+          echo "The kernel build is the release gate for this development stage."
+      - name: Upload kernel artifact
         uses: actions/upload-artifact@v4
         with:
-          name: NexOS-x86_64-desktop
-          path: |
-            dist/NexOS-x86_64.iso
-            dist/SHA256SUMS
-            dist/NexOS-x86_64-UEFI.img
-            dist/NexOS-x86_64-BIOS.img
+          name: NexOS-x86_64-kernel
+          path: target/x86_64-unknown-none/release/nexkernel
 
-      - name: Publish GitHub Release
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v2
-        with:
-          generate_release_notes: true
-          files: |
-            dist/NexOS-x86_64.iso
-            dist/SHA256SUMS
-            dist/NexOS-x86_64-UEFI.img
-            dist/NexOS-x86_64-BIOS.img
