@@ -45,3 +45,14 @@ where A:FrameAllocator<Size4KiB>{
 pub unsafe fn install_user_cr3(root:PhysFrame<Size4KiB>){
  core::arch::asm!("mov cr3,{}",in(reg)root.start_address().as_u64(),options(nostack,preserves_flags));
 }
+
+pub fn launch_user_process(process: UserProcess) -> ! {
+    let context = crate::x86_kernel::process::context::UserContext::new(
+        process.entry,
+        process.stack_top,
+    );
+    unsafe {
+        install_user_cr3(process.root);
+        crate::x86_kernel::process::context::enter_user(&context);
+    }
+}
