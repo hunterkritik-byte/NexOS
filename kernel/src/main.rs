@@ -168,8 +168,14 @@ mod x86_kernel {
         }
 
         unsafe fn write_byte(&mut self, byte: u8) {
-            while self.line.read() & 0x20 == 0 {}
-            self.data.write(byte);
+            // Do not let an absent or broken UART freeze the interactive shell.
+            for _ in 0..1_000_000 {
+                if self.line.read() & 0x20 != 0 {
+                    self.data.write(byte);
+                    return;
+                }
+                core::hint::spin_loop();
+            }
         }
 
         unsafe fn read_byte(&mut self) -> Option<u8> {
@@ -177,16 +183,22 @@ mod x86_kernel {
         }
     }
 
-    fn command(term: &mut Terminal, serial: &mut Serial, command: &[u8]) {
+    fn execute_command(term: &mut Terminal, serial: &mut Serial, command: &[u8]) {
         let mut end = command.len();
         while end > 0 && command[end - 1] == b' ' { end -= 1; }
         let cmd = &command[..end];
 
         match cmd {
             b"" => {}
-            b"help" => term.write_str("Commands: help clear echo uname reboot\n"),
+            b"help" => term.write_str("Commands: help clear echo uname version status net wifi hotspot bluetooth reboot\n"),
             b"clear" => term.clear(),
-            b"uname" => term.write_str("NexOS 0.1.0 x86_64\n"),
+            b"uname" => term.write_str("NexOS x86_64\n"),
+            b"version" => term.write_str("NexOS development build (pre-v0.2.0)\n"),
+            b"status" => term.write_str("NexOS: experimental\nTerminal: keyboard + COM1 serial polling\nWi-Fi: unavailable (no chipset driver)\nHotspot: unavailable (Wi-Fi AP stack not implemented)\nBluetooth: unavailable (no HCI/controller driver)\n"),
+            b"net" => term.write_str("Network support: PCI discovery only; no network interface is active.\n"),
+            b"wifi" | b"wifi status" => term.write_str("Wi-Fi unavailable: chipset-specific driver, firmware loading, and 802.11 management are not implemented.\n"),
+            b"hotspot" | b"hotspot status" => term.write_str("Hotspot unavailable: requires a working Wi-Fi driver, AP mode, authentication, and DHCP service.\n"),
+            b"bluetooth" | b"bluetooth status" => term.write_str("Bluetooth unavailable: no HCI transport/controller driver or Bluetooth protocol stack is implemented.\n"),
             b"reboot" => unsafe {
                 let mut port = Port::new(0x64u16);
                 port.write(0xfeu8);
@@ -232,16 +244,16 @@ mod x86_kernel {
     }
 
     fn shell(term: &mut Terminal, serial: &mut Serial, keyboard: &mut Keyboard) -> ! {
-        let mut command = [0u8; 128];
+        let mut buffer = [0u8; 128];
         let mut len = 0usize;
         term.write_str("NexOS Terminal\nType 'help' for commands.\n\nnexos> ");
 
         loop {
-            if let Some(byte) = unsafe { keyboard.read_char() } {
+            if let Some(byte) = unsafe { keyboard.read_char() }.or_else(|| unsafe { serial.read_byte() }) {
                 match byte {
                     b'\r' | b'\n' => {
                         term.put_byte(b'\n');
-                        command(term, serial, &command[..len]);
+                        execute_command(term, serial, &buffer[..len]);
                         len = 0;
                         term.write_str("nexos> ");
                     }
@@ -253,8 +265,8 @@ mod x86_kernel {
                         }
                     }
                     32..=126 => {
-                        if len < command.len() {
-                            command[len] = byte;
+                        if len < buffer.len() {
+                            buffer[len] = byte;
                             len += 1;
                             term.put_byte(byte);
                             unsafe { serial.write_byte(byte); }
