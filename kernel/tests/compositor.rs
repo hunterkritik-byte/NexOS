@@ -44,7 +44,7 @@ fn compositor_paints_desktop_and_window_chrome() {
     assert_eq!(canvas.pixel(0, 0), theme.desktop);
     assert_eq!(canvas.pixel(2, 3), theme.border);
     assert_eq!(canvas.pixel(3, 4), theme.title_active);
-    assert_eq!(canvas.pixel(4, 8), theme.window_body);
+    assert_eq!(canvas.pixel(4, 10), theme.window_body);
 
     assert!(manager.focus(id));
     render(&mut canvas, &manager, theme);
