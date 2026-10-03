@@ -284,7 +284,8 @@ mod x86_kernel {
         } else {
             terminal.write_str("Memory: physical-memory mapping unavailable; isolation setup deferred.\\n");
         }
-        unsafe { arch::x86_64::init_cpu_tables(); }
+        let kernel_stack_top = boot_info.kernel_stack_bottom.saturating_add(boot_info.kernel_stack_len);
+        unsafe { arch::x86_64::init_cpu_tables(kernel_stack_top); }
         let mut serial = unsafe { Serial::new() };
         let mut keyboard = unsafe { Keyboard::new() };
         boot_splash(&mut terminal);
@@ -323,6 +324,51 @@ mod x86_kernel {
             }
         }
         terminal.write_str("Network drivers are probe-only until chipset-specific implementations are added.\\n\\n");
+
+        if let (Some(ramdisk_addr), len) = (boot_info.ramdisk_addr.into_option(), boot_info.ramdisk_len) {
+            if len > 0 && len <= usize::MAX as u64 {
+                let image = unsafe {
+                    core::slice::from_raw_parts(ramdisk_addr as *const u8, len as usize)
+                };
+                terminal.write_str("Userspace: validating /bin/nexshell ELF...\\n");
+                if let Some(offset) = boot_info.physical_memory_offset.into_option() {
+                    let mut frame_allocator = BootInfoFrameAllocator::new(&boot_info.memory_regions);
+                    let mapper = unsafe { paging::init_mapper(VirtAddr::new(offset)) };
+                    let active = mapper.level_4_table();
+                    match unsafe {
+                        process::build_elf_process(
+                            VirtAddr::new(offset),
+                            active,
+                            &mut frame_allocator,
+                            image,
+                        )
+                    } {
+                        Ok(user_process) => {
+                            let mut scheduler = process::Scheduler::new();
+                            if scheduler.add(process::Process::new(
+                                user_process.entry as usize,
+                                user_process.stack_top as usize,
+                            )).is_some() {
+                                terminal.write_str("Userspace: nexsh created; entering ring 3...\\n");
+                                unsafe { process::launch_user_process(user_process); }
+                            } else {
+                                terminal.write_str("Userspace: scheduler table full.\\n");
+                            }
+                        }
+                        Err(error) => {
+                            let _ = writeln!(terminal, "Userspace: ELF launch failed: {error}\\n");
+                        }
+                    }
+                } else {
+                    terminal.write_str("Userspace: physical memory mapping unavailable.\\n");
+                }
+            } else {
+                terminal.write_str("Userspace: invalid ramdisk length.\\n");
+            }
+        } else {
+            terminal.write_str("Userspace: no init ramdisk; staying in kernel shell.\\n");
+        }
+
         shell(&mut terminal, &mut serial, &mut keyboard)
     }
 
