@@ -1,32 +1,6 @@
-#![allow(dead_code)]
-
-const ELF_MAGIC: [u8; 4] = [0x7f, b'E', b'L', b'F'];
-
-#[derive(Clone, Copy)]
-pub struct Elf64Header {
-    pub entry: u64,
-    pub phoff: u64,
-    pub phentsize: u16,
-    pub phnum: u16,
-}
-
-pub fn parse_elf64(image: &[u8]) -> Result<Elf64Header, &'static str> {
-    if image.len() < 64 || image[0..4] != ELF_MAGIC {
-        return Err("not an ELF image");
-    }
-
-    if image[4] != 2 || image[5] != 1 {
-        return Err("ELF image is not 64-bit little-endian");
-    }
-
-    let entry = u64::from_le_bytes(image[24..32].try_into().unwrap());
-    let phoff = u64::from_le_bytes(image[32..40].try_into().unwrap());
-    let phentsize = u16::from_le_bytes(image[54..56].try_into().unwrap());
-    let phnum = u16::from_le_bytes(image[56..58].try_into().unwrap());
-
-    if phentsize < 56 {
-        return Err("invalid ELF program-header size");
-    }
-
-    Ok(Elf64Header { entry, phoff, phentsize, phnum })
-}
+const ELF_MAGIC:[u8;4]=[0x7f,b'E',b'L',b'F']; pub const PT_LOAD:u32=1;
+#[derive(Clone,Copy)] pub struct ProgramHeader{pub ty:u32,pub flags:u32,pub offset:u64,pub vaddr:u64,pub filesz:u64,pub memsz:u64,pub align:u64}
+#[derive(Clone,Copy)] pub struct Elf64Header{pub entry:u64,pub phoff:u64,pub phentsize:u16,pub phnum:u16}
+fn u16v(b:&[u8])->u16{u16::from_le_bytes([b[0],b[1]])} fn u32v(b:&[u8])->u32{u32::from_le_bytes(b.try_into().unwrap())} fn u64v(b:&[u8])->u64{u64::from_le_bytes(b.try_into().unwrap())}
+pub fn parse_elf64(image:&[u8])->Result<Elf64Header,&'static str>{if image.len()<64||image[..4]!=ELF_MAGIC||image[4]!=2||image[5]!=1{return Err("invalid ELF64")}let h=Elf64Header{entry:u64v(&image[24..32]),phoff:u64v(&image[32..40]),phentsize:u16v(&image[54..56]),phnum:u16v(&image[56..58])};if h.phentsize<56||h.phnum==0||h.phnum>128{return Err("invalid program headers")}let end=h.phoff.checked_add(h.phentsize as u64*h.phnum as u64).ok_or("ELF header overflow")?;if end>image.len() as u64{return Err("program headers outside image")}Ok(h)}
+pub fn program_headers(image:&[u8],h:Elf64Header)->Result<([Option<ProgramHeader>;16],usize),&'static str>{let mut out=[None;16];let mut n=0;for i in 0..h.phnum as usize{let o=h.phoff as usize+i*h.phentsize as usize;let p=&image[o..o+56];let ph=ProgramHeader{ty:u32v(&p[..4]),flags:u32v(&p[4..8]),offset:u64v(&p[8..16]),vaddr:u64v(&p[16..24]),filesz:u64v(&p[32..40]),memsz:u64v(&p[40..48]),align:u64v(&p[48..56])};if ph.ty==PT_LOAD{if n==16{return Err("too many load segments")}if ph.filesz>ph.memsz||ph.offset.checked_add(ph.filesz).ok_or("segment overflow")?>image.len() as u64{return Err("segment outside image")}if ph.vaddr.checked_add(ph.memsz).ok_or("address overflow")?>=0x0000_8000_0000_0000{return Err("segment outside user range")}out[n]=Some(ph);n+=1;}}Ok((out,n))}
