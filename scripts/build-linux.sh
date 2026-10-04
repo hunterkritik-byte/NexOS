@@ -33,7 +33,11 @@ rm -rf config/chroot_local-includes config/includes.binary
 mkdir -p config/chroot_local-includes
 
 if [[ "$NO_DESKTOP" -eq 1 ]]; then
-  sed -i '/^task-xfce-desktop$/d;/^lightdm$/d;/^lightdm-gtk-greeter$/d;/^xfce4-terminal$/d;/^thunar$/d;/^firefox-esr$/d' config/package-lists/nexos.list.chroot
+  sed -i '/^task-xfce-desktop$/d;/^task-laptop$/d;/^task-printing$/d;/^lightdm$/d;/^lightdm-gtk-greeter$/d;/^xfce4$/d;/^xfce4-session$/d;/^xfce4-panel$/d;/^xfdesktop4$/d;/^xfce4-terminal$/d;/^thunar$/d;/^firefox-esr$/d' config/package-lists/nexos.list.chroot
+fi
+
+if [[ "$NO_DESKTOP" -eq 0 ]]; then
+  grep -Eq "^task-xfce-desktop$" config/package-lists/nexos.list.chroot || { echo "ERROR: Desktop package profile missing"; exit 1; }
 fi
 
 lb config \
