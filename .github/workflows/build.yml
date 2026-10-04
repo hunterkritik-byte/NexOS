@@ -158,3 +158,45 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "${GITHUB_REF_NAME}"             dist/NexOS-x86_64.iso             dist/NexOS-x86_64-bios.img             dist/NexOS-x86_64-uefi.img             dist/SHA256SUMS             --title "NexOS ${GITHUB_REF_NAME}"             --generate-notes
+
+
+  desktop-iso:
+    name: Build NexOS Desktop ISO
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install live-build and ISO dependencies
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
+            live-build debootstrap xorriso squashfs-tools \
+            grub-pc-bin grub-efi-amd64-bin ovmf \
+            dosfstools mtools ca-certificates
+
+      - name: Build full NexOS Desktop ISO
+        run: |
+          chmod +x scripts/build-linux.sh
+          sudo ./scripts/build-linux.sh
+
+      - name: Validate Desktop ISO
+        run: |
+          test -s dist/NexOS-Linux-x64.iso
+          size=$(stat -c %s dist/NexOS-Linux-x64.iso)
+          echo "Desktop ISO size: $size bytes"
+          test "$size" -gt 50000000
+          sha256sum -c dist/NexOS-Linux-x64.iso.sha256
+          sha512sum dist/NexOS-Linux-x64.iso > dist/NexOS-Linux-x64.iso.sha512
+          file dist/NexOS-Linux-x64.iso
+
+      - name: Upload NexOS Desktop ISO
+        uses: actions/upload-artifact@v4
+        with:
+          name: NexOS-Desktop-x64
+          path: |
+            dist/NexOS-Linux-x64.iso
+            dist/NexOS-Linux-x64.iso.sha256
+            dist/NexOS-Linux-x64.iso.sha512
+          retention-days: 30
