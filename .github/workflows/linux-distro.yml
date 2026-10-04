@@ -19,34 +19,37 @@ on:
 jobs:
   build:
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    container: debian:13
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install build dependencies
+      - name: Install Debian build dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y live-build debootstrap qemu-system-x86 xorriso squashfs-tools grub-pc-bin grub-efi-amd64-bin ovmf
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y \
+            live-build debootstrap qemu-system-x86 xorriso squashfs-tools \
+            grub-pc-bin grub-efi-amd64-bin ovmf ca-certificates file
 
-      - name: Build NexOS Linux ISO
-        run: sudo bash ./scripts/build-linux.sh
+      - name: Build NexOS Linux x64 ISO
+        run: bash ./scripts/build-linux.sh
 
-      - name: Validate ISO metadata
+      - name: Validate ISO
         run: |
-          test -s dist/NexOS-Linux-amd64.iso
-          sha256sum -c dist/NexOS-Linux-amd64.iso.sha256
-          file dist/NexOS-Linux-amd64.iso
-          xorriso -indev dist/NexOS-Linux-amd64.iso -report_el_torito as_mkisofs
-          test "$(stat -c %s dist/NexOS-Linux-amd64.iso)" -gt 50000000
+          test -s dist/NexOS-Linux-x64.iso
+          test "$(stat -c %s dist/NexOS-Linux-x64.iso)" -gt 50000000
+          sha256sum -c dist/NexOS-Linux-x64.iso.sha256
+          file dist/NexOS-Linux-x64.iso
+          xorriso -indev dist/NexOS-Linux-x64.iso -report_el_torito as_mkisofs
 
       - name: QEMU ISO smoke test
-        run: |
-          sudo bash ./scripts/smoke-test.sh dist/NexOS-Linux-amd64.iso
+        run: bash ./scripts/smoke-test.sh dist/NexOS-Linux-x64.iso
 
-      - name: Upload ISO
+      - name: Upload downloadable ISO
         uses: actions/upload-artifact@v4
         with:
-          name: NexOS-Linux-amd64
+          name: NexOS-Linux-x64
           path: |
-            dist/NexOS-Linux-amd64.iso
-            dist/NexOS-Linux-amd64.iso.sha256
+            dist/NexOS-Linux-x64.iso
+            dist/NexOS-Linux-x64.iso.sha256
+          retention-days: 30
