@@ -1,0 +1,7 @@
+/* NexOS desktop theme: clean, dark, neutral Linux desktop styling. */
+@define-color theme_bg_color #101722;
+@define-color theme_fg_color #e6ebf2;
+@define-color theme_base_color #0c1119;
+@define-color theme_text_color #e6ebf2;
+@define-color theme_selected_bg_color #315b86;
+@define-color theme_selected_fg_color #ffffff;
