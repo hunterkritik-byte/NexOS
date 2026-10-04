@@ -1,2 +1,11 @@
-Window.SetBackgroundTopColor(0.063,0.090,0.133);
-Window.SetBackgroundBottomColor(0.063,0.090,0.133);
+# NexOS polished Plymouth loading screen
+Window.SetBackgroundTopColor(0.020, 0.039, 0.071);
+Window.SetBackgroundBottomColor(0.020, 0.039, 0.071);
+
+logo = Image("/usr/share/backgrounds/nexos.svg");
+sprite = Sprite(logo);
+sprite.SetX(Window.GetX() + (Window.GetWidth() - logo.GetWidth()) / 2);
+sprite.SetY(Window.GetY() + (Window.GetHeight() - logo.GetHeight()) / 2);
+
+# Keep the artwork centered and let the spinner in the artwork provide
+# a stable loading indicator while services initialize.
