@@ -6,12 +6,15 @@ use x86_64::{
     },
 };
 
-pub const KERNEL_FLAGS: PageTableFlags =
-    PageTableFlags::PRESENT | PageTableFlags::WRITABLE;
-pub const USER_CODE_FLAGS: PageTableFlags =
-    PageTableFlags::PRESENT | PageTableFlags::USER_ACCESSIBLE;
-pub const USER_DATA_FLAGS: PageTableFlags =
-    PageTableFlags::PRESENT | PageTableFlags::WRITABLE | PageTableFlags::USER_ACCESSIBLE;
+pub fn kernel_flags() -> PageTableFlags {
+    PageTableFlags::PRESENT | PageTableFlags::WRITABLE
+}
+pub fn user_code_flags() -> PageTableFlags {
+    PageTableFlags::PRESENT | PageTableFlags::USER_ACCESSIBLE
+}
+pub fn user_data_flags() -> PageTableFlags {
+    PageTableFlags::PRESENT | PageTableFlags::WRITABLE | PageTableFlags::USER_ACCESSIBLE
+}
 
 pub unsafe fn active_level_4_table(physical_memory_offset: VirtAddr) -> &'static mut PageTable {
     let level_4 = x86_64::registers::control::Cr3::read().0;
