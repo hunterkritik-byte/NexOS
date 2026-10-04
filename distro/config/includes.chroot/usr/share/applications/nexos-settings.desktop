@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=NexOS Settings
+Comment=Configure your NexOS desktop
+Exec=nexos-settings
+Icon=preferences-system
+Terminal=false
+Categories=Settings;DesktopSettings;
