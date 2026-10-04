@@ -1,0 +1,67 @@
+name: NexOS Extended Hardware Tests
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/hardware-extended.yml'
+      - 'distro/config/package-lists/**'
+      - 'docs/HARDWARE-TESTING.md'
+
+jobs:
+  linux-hardware-validation:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install test packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bluez pipewire wireplumber alsa-utils usbutils pciutils udev iw rfkill
+
+      - name: Wi-Fi driver and firmware policy check
+        run: |
+          set -eux
+          test -d /lib/firmware
+          test -x /usr/sbin/rfkill
+          test -x /usr/sbin/iw || true
+          rfkill list || true
+          find /lib/firmware -maxdepth 2 -type f | head -50 || true
+          echo "Physical Wi-Fi association is not available on a standard GitHub-hosted runner."
+
+      - name: Bluetooth controller and pairing check
+        run: |
+          set -eux
+          bluetoothctl --version
+          bluetoothd --version
+          timeout 10s bluetoothctl list || true
+          controllers="$(timeout 10s bluetoothctl list 2>/dev/null | wc -l || true)"
+          echo "Bluetooth controllers visible: $controllers"
+          if [ "$controllers" -eq 0 ]; then
+            echo "No physical Bluetooth controller exposed by hosted runner; pairing test is hardware-gated."
+          fi
+
+      - name: Audio playback and microphone software path
+        run: |
+          set -eux
+          pipewire --version
+          wireplumber --version
+          aplay -l || true
+          arecord -l || true
+          wpctl status || true
+          echo "Physical speaker/microphone playback requires a real audio device; hosted CI cannot prove it."
+
+      - name: Physical USB enumeration
+        run: |
+          set -eux
+          lsusb
+          udevadm info --export-db >/tmp/udev-db
+          test -s /tmp/udev-db
+          echo "Hosted CI validates USB enumeration only; insertion/removal of a physical USB device requires a self-hosted runner."
+
+      - name: NexOS test policy
+        run: |
+          echo "This workflow validates Linux hardware interfaces and firmware/tooling."
+          echo "It intentionally does not report physical Bluetooth pairing, speaker/microphone playback,"
+          echo "USB hotplug, or Wi-Fi association as passed without real hardware."
