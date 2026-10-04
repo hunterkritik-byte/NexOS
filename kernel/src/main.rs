@@ -18,10 +18,7 @@ mod x86_kernel {
     mod graphics;
     // Existing graphics modules use the crate-level window path.
     pub use graphics::window;
-    mod arch {
-        #[path = "../../arch/x86_64/mod.rs"]
-        pub mod x86_64;
-    }
+    pub use crate::arch::x86_64;
 
     const VGA_BUFFER: usize = 0xb8000;
     const VGA_WIDTH: usize = 80;
