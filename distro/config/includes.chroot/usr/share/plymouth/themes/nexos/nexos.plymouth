@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=NexOS
+Description=NexOS boot splash
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/nexos
+ScriptFile=/usr/share/plymouth/themes/nexos/nexos.script
