@@ -63,8 +63,9 @@ jobs:
       - name: NexOS hardware checker
         run: |
           set -eux
-          test -f distro/config/includes.chroot/usr/share/nexos/hardware-check.sh
-          sh -n distro/config/includes.chroot/usr/share/nexos/hardware-check.sh
+          test -f distro/config/hooks/live/0300-hardware-services.hook.chroot
+          sh -n distro/config/hooks/live/0300-hardware-services.hook.chroot
+          grep -q 'hardware-check.sh' distro/config/hooks/live/0300-hardware-services.hook.chroot
 
       - name: Report hardware limitation
         run: |
