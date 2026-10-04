@@ -109,3 +109,30 @@ ufw
 unattended-upgrades
 apt-listchanges
 needrestart
+
+# Essential daily utilities
+zip
+unzip
+p7zip-full
+thunar-archive-plugin
+evince
+libreoffice-calc
+libreoffice-writer
+vlc
+
+# Web/media codecs and fonts
+gstreamer1.0-plugins-good
+gstreamer1.0-plugins-bad
+gstreamer1.0-plugins-ugly
+fonts-liberation
+fonts-noto-color-emoji
+
+# Laptop power/display
+tlp
+tlp-rdw
+xfce4-power-manager
+redshift
+
+# Package safety
+apt-listbugs
+apt-listchanges
