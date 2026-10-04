@@ -1,8 +1,9 @@
 use x86_64::structures::gdt::{Descriptor, GlobalDescriptorTable, SegmentSelector};
 use x86_64::structures::tss::TaskStateSegment;
 use x86_64::{
+    instructions::segmentation::Segment,
     VirtAddr,
-    instructions::segmentation::{CS, SS},
+    instructions::segmentation::CS,
     instructions::tables::load_tss,
 };
 
@@ -38,7 +39,6 @@ impl GlobalTables {
     pub unsafe fn init(&'static self) {
         self.gdt.load();
         CS::set_reg(self.code);
-        SS::set_reg(self.data);
         load_tss(self.tss_selector);
     }
 }
