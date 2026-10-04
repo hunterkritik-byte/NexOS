@@ -82,3 +82,19 @@ TLP/TLP-RDW and Xfce Power Manager are included for power and lid/sleep manageme
 ## Package update safety
 
 apt-listbugs and apt-listchanges are included so package changes can surface known bug and changelog information before or during upgrades. They do not guarantee that an update is safe; users should keep backups and use the NexOS recovery path if a package transition fails.
+
+
+## Convenience applications
+
+The desktop profile also includes:
+- XFCE screenshot and clipboard tools
+- Task manager and calculator
+- Parole media player and Ristretto image viewer
+- Catfish file search
+- Engrampa archive manager
+- Seahorse/keyring integration
+- Timeshift for optional system snapshots
+- Network time synchronization
+- Broad printer-driver support and Simple Scan
+- GVFS removable-device support
+- MTP/JMTPFS tools for compatible Android/mobile devices
