@@ -44,7 +44,8 @@ This roadmap distinguishes source-code foundations from features that have been 
 
 ## Phase 4 — Storage
 - [x] VFS API and in-memory filesystem prototype
-- [x] Experimental block-device and persistent filesystem code
+- [x] Block-device abstraction and ATA PIO prototype (not yet proven on hardware)
+- [x] Fixed-slot persistent filesystem with multi-sector metadata and bounded file reads/writes (not yet integrated into boot path or hardware-tested)
 - [ ] Add a real block-device driver and safe device discovery
 - [ ] Validate on-disk metadata, allocation, bounds, and crash consistency
 - [ ] Implement a complete, tested filesystem and persistent userspace storage
@@ -72,9 +73,13 @@ This roadmap distinguishes source-code foundations from features that have been 
 
 ## Phase 7 — Graphics and input
 - [x] Framebuffer/windowing foundations
+- [x] Fixed-capacity window manager with stable IDs, z-order, focus, hit testing, move/resize, and close operations (host-side regression tests added; compositor not integrated)
 - [ ] Hardware-independent terminal rendering
 - [ ] USB HID keyboard/mouse support
-- [ ] Compositor, window manager, and desktop shell
+- [x] Host-testable desktop pointer routing: primary-click focus and title-bar dragging (requires a driver to feed mouse events; not wired into boot)
+- [x] Software compositor foundation that paints desktop background, window borders, and active/inactive title bars (host-side tests added; framebuffer and input integration still pending)
+- [x] Allocation-free bitmap graphics text console with clipped drawing and configurable colors (host-side tests added; boot shell integration still pending)
+- [ ] Window manager integration with live framebuffer and desktop shell
 - [ ] Settings and file manager
 
 ## Phase 8 — Distribution and release
