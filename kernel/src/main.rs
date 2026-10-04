@@ -2,6 +2,9 @@
 #![cfg_attr(target_os = "none", no_main)]
 
 #[cfg(target_os = "none")]
+mod arch;
+
+#[cfg(target_os = "none")]
 mod x86_kernel {
     use bootloader_api::{entry_point, BootInfo, BootloaderConfig};
     use bootloader_api::config::Mapping;
