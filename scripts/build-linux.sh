@@ -48,6 +48,7 @@ lb config \
   --mirror-chroot "http://deb.debian.org/debian/" \
   --mirror-chroot-security "http://deb.debian.org/debian-security/" \
   --debian-installer live \
+  --initsystem systemd \
   --debian-installer-gui true \
   --memtest none \
   --security false \
