@@ -26,6 +26,10 @@ NexOS now has two tracks:
 - [ ] Calamares installer completes a VM installation
 - [ ] First boot after installation succeeds
 - [ ] NexOS welcome/setup application
+- [ ] Custom NEXOS boot splash: "NEXOS — MADE BY KRITIK BHATTARAI"
+- [ ] Default desktop wallpaper and theme
+- [ ] File manager, terminal, browser and settings smoke tests
+- [ ] Wi-Fi, Bluetooth, audio and printing smoke tests
 
 ### D2 — NexOS system layer
 - [ ] NexOS system CLI
