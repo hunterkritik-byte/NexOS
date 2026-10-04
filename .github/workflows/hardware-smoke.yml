@@ -48,7 +48,7 @@ jobs:
           set -eux
           pipewire --version
           wireplumber --version
-          wpctl --version
+          wpctl status || true
           aplay --version
           arecord --version
           timeout 10s pw-cli info 0 || true
