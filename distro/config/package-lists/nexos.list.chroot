@@ -136,3 +136,25 @@ redshift
 # Package safety
 apt-listbugs
 apt-listchanges
+
+# Desktop convenience utilities
+xfce4-screenshooter
+xfce4-clipman
+xfce4-taskmanager
+galculator
+parole
+ristretto
+catfish
+engrampa
+seahorse
+gnome-keyring
+libsecret-1-0
+timeshift
+ntp
+systemd-timesyncd
+printer-driver-all
+simple-scan
+gvfs-fuse
+gvfs-backends
+mtp-tools
+jmtpfs
