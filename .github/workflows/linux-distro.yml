@@ -33,7 +33,9 @@ jobs:
             grub-pc-bin grub-efi-amd64-bin ovmf ca-certificates file
 
       - name: Build NexOS Linux x64 ISO
-        run: bash ./scripts/build-linux.sh
+        run: |
+          chmod +x scripts/build-linux.sh scripts/smoke-test.sh
+          sudo ./scripts/build-linux.sh
 
       - name: Validate ISO
         run: |
