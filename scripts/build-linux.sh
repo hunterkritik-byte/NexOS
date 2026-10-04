@@ -17,8 +17,7 @@ for arg in "$@"; do
 done
 
 if [[ "$EUID" -ne 0 ]]; then
-  echo "Run as root: $0" >&2
-  exit 1
+  exec sudo --preserve-env=bash "$0" "$@"
 fi
 
 command -v lb >/dev/null || { echo "live-build is required"; exit 1; }
