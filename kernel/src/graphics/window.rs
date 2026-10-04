@@ -154,6 +154,14 @@ impl WindowManager {
         true
     }
 
+    /// Iterates windows from back to front, matching compositor paint order.
+    pub fn z_ordered(&self) -> impl Iterator<Item = (usize, &Window)> {
+        self.z_order[..self.count]
+            .iter()
+            .copied()
+            .filter_map(move |id| self.windows[id].as_ref().map(|window| (id, window)))
+    }
+
     pub fn len(&self) -> usize { self.count }
 
     pub fn is_empty(&self) -> bool { self.count == 0 }

@@ -14,6 +14,9 @@ mod x86_kernel {
     mod process;
     mod fs;
     mod terminal;
+    mod graphics;
+    // Existing graphics modules use the crate-level window path.
+    pub use graphics::window;
     mod arch { pub mod x86_64; }
 
     const VGA_BUFFER: usize = 0xb8000;
