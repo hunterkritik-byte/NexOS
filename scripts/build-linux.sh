@@ -26,7 +26,17 @@ command -v xorriso >/dev/null || { echo "xorriso is required"; exit 1; }
 mkdir -p "$DIST_DIR" "$CACHE_DIR"
 rm -rf "$BUILD_DIR"
 mkdir -p "$BUILD_DIR"
+SOURCE_PACKAGE_LIST="$PROFILE_DIR/package-lists/nexos.list.chroot"
+if [[ ! -f "$SOURCE_PACKAGE_LIST" ]]; then
+  echo "ERROR: source desktop package list missing: $SOURCE_PACKAGE_LIST" >&2
+  exit 1
+fi
 cp -a "$PROFILE_DIR/." "$BUILD_DIR/"
+if [[ ! -f "$BUILD_DIR/config/package-lists/nexos.list.chroot" ]]; then
+  echo "ERROR: live-build package list was not copied to $BUILD_DIR/config/package-lists/nexos.list.chroot" >&2
+  find "$BUILD_DIR" -maxdepth 3 -type f | sort >&2 || true
+  exit 1
+fi
 cd "$BUILD_DIR"
 
 rm -rf config/chroot_local-includes config/includes.binary
@@ -37,7 +47,7 @@ if [[ "$NO_DESKTOP" -eq 1 ]]; then
 fi
 
 if [[ "$NO_DESKTOP" -eq 0 ]]; then
-  grep -Eq "^task-xfce-desktop$" config/package-lists/nexos.list.chroot || { echo "ERROR: Desktop package profile missing"; exit 1; }
+  grep -Eq "^task-xfce-desktop[[:space:]]*$" "$BUILD_DIR/config/package-lists/nexos.list.chroot" || { echo "ERROR: Desktop package profile missing"; exit 1; }
 fi
 
 lb config \
