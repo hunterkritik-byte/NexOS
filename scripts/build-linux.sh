@@ -41,19 +41,107 @@ cd "$BUILD_DIR"
 
 rm -rf config/chroot_local-includes config/includes.binary
 mkdir -p config/chroot_local-includes/root/isolinux
-ln -s /usr/lib/ISOLINUX/isolinux.bin config/chroot_local-includes/root/isolinux/isolinux.bin
-ln -s /usr/lib/syslinux/modules/bios/vesamenu.c32 config/chroot_local-includes/root/isolinux/vesamenu.c32
-mkdir -p config/hooks/normal
-cat > config/hooks/normal/9900-fix-isolinux-links.hook.chroot <<'HOOK'
-#!/bin/sh
-set -eu
-mkdir -p /root/isolinux
-rm -f /root/isolinux/isolinux.bin /root/isolinux/vesamenu.c32
-ln -s /usr/lib/ISOLINUX/isolinux.bin /root/isolinux/isolinux.bin
-ln -s /usr/lib/syslinux/modules/bios/vesamenu.c32 /root/isolinux/vesamenu.c32
-HOOK
-chmod +x config/hooks/normal/9900-fix-isolinux-links.hook.chroot
 
+# live-build's bootloader assets are host-side files. Copy the real files
+# into the chroot instead of creating absolute symlinks that are broken
+# inside the chroot namespace during lb_binary_syslinux.
+LB_BOOTLOADER_DIR="/usr/share/live/build/bootloaders"
+test -f "$LB_BOOTLOADER_DIR/isolinux/isolinux.bin" || {
+  echo "ERROR: live-build ISOLINUX bootloader asset is missing" >&2
+  dpkg -L live-build | grep -E '/isolinux\.binif [[ "$NO_DESKTOP" -eq 1 ]]; then
+  sed -i '/^task-xfce-desktop$/d;/^task-laptop$/d;/^task-printing$/d;/^lightdm$/d;/^lightdm-gtk-greeter$/d;/^xfce4$/d;/^xfce4-session$/d;/^xfce4-panel$/d;/^xfdesktop4$/d;/^xfce4-terminal$/d;/^thunar$/d;/^firefox-esr$/d' "$BUILD_DIR/package-lists/nexos.list.chroot"
+fi
+
+if [[ "$NO_DESKTOP" -eq 0 ]]; then
+  grep -Eq "^task-xfce-desktop[[:space:]]*$" "$BUILD_DIR/package-lists/nexos.list.chroot" || { echo "ERROR: Desktop package profile missing"; exit 1; }
+fi
+
+lb config \
+  --mode debian \
+  --distribution trixie \
+  --architectures amd64 \
+  --binary-images iso-hybrid \
+  --archive-areas "main contrib non-free non-free-firmware" \
+  --mirror-bootstrap "http://deb.debian.org/debian/" \
+  --mirror-binary "http://deb.debian.org/debian/" \
+  --mirror-binary-security "http://deb.debian.org/debian-security/" \
+  --mirror-chroot "http://deb.debian.org/debian/" \
+  --mirror-chroot-security "http://deb.debian.org/debian-security/" \
+  --debian-installer false \
+  --initsystem systemd \
+  --memtest none \
+  --security false \
+  --apt-indices false \
+  --apt-source-archives false \
+  --apt-recommends true \
+  --linux-packages "none" \
+  --bootappend-live "boot=live components username=nexos hostname=nexos console=ttyS0,115200"
+
+lb build 2>&1 | tee "$ROOT_DIR/build/nexos-live-build.log"
+
+ISO="$(find "$BUILD_DIR" -maxdepth 1 -type f -name '*.iso' -print -quit)"
+if [[ -z "$ISO" ]]; then
+  echo "ERROR: live-build did not produce an ISO" >&2
+  exit 1
+fi
+
+cp "$ISO" "$DIST_DIR/NexOS-Linux-x64.iso"
+sha256sum "$DIST_DIR/NexOS-Linux-x64.iso" > "$DIST_DIR/NexOS-Linux-x64.iso.sha256"
+
+echo "Built: $DIST_DIR/NexOS-Linux-x64.iso"
+ >&2 || true
+  exit 1
+}
+test -f "$LB_BOOTLOADER_DIR/syslinux_common/vesamenu.c32" || {
+  echo "ERROR: live-build vesamenu.c32 asset is missing" >&2
+  dpkg -L live-build | grep -E '/vesamenu\.c32if [[ "$NO_DESKTOP" -eq 1 ]]; then
+  sed -i '/^task-xfce-desktop$/d;/^task-laptop$/d;/^task-printing$/d;/^lightdm$/d;/^lightdm-gtk-greeter$/d;/^xfce4$/d;/^xfce4-session$/d;/^xfce4-panel$/d;/^xfdesktop4$/d;/^xfce4-terminal$/d;/^thunar$/d;/^firefox-esr$/d' "$BUILD_DIR/package-lists/nexos.list.chroot"
+fi
+
+if [[ "$NO_DESKTOP" -eq 0 ]]; then
+  grep -Eq "^task-xfce-desktop[[:space:]]*$" "$BUILD_DIR/package-lists/nexos.list.chroot" || { echo "ERROR: Desktop package profile missing"; exit 1; }
+fi
+
+lb config \
+  --mode debian \
+  --distribution trixie \
+  --architectures amd64 \
+  --binary-images iso-hybrid \
+  --archive-areas "main contrib non-free non-free-firmware" \
+  --mirror-bootstrap "http://deb.debian.org/debian/" \
+  --mirror-binary "http://deb.debian.org/debian/" \
+  --mirror-binary-security "http://deb.debian.org/debian-security/" \
+  --mirror-chroot "http://deb.debian.org/debian/" \
+  --mirror-chroot-security "http://deb.debian.org/debian-security/" \
+  --debian-installer false \
+  --initsystem systemd \
+  --memtest none \
+  --security false \
+  --apt-indices false \
+  --apt-source-archives false \
+  --apt-recommends true \
+  --linux-packages "none" \
+  --bootappend-live "boot=live components username=nexos hostname=nexos console=ttyS0,115200"
+
+lb build 2>&1 | tee "$ROOT_DIR/build/nexos-live-build.log"
+
+ISO="$(find "$BUILD_DIR" -maxdepth 1 -type f -name '*.iso' -print -quit)"
+if [[ -z "$ISO" ]]; then
+  echo "ERROR: live-build did not produce an ISO" >&2
+  exit 1
+fi
+
+cp "$ISO" "$DIST_DIR/NexOS-Linux-x64.iso"
+sha256sum "$DIST_DIR/NexOS-Linux-x64.iso" > "$DIST_DIR/NexOS-Linux-x64.iso.sha256"
+
+echo "Built: $DIST_DIR/NexOS-Linux-x64.iso"
+ >&2 || true
+  exit 1
+}
+cp -L "$LB_BOOTLOADER_DIR/isolinux/isolinux.bin" config/chroot_local-includes/root/isolinux/isolinux.bin
+cp -L "$LB_BOOTLOADER_DIR/syslinux_common/vesamenu.c32" config/chroot_local-includes/root/isolinux/vesamenu.c32
+test -s config/chroot_local-includes/root/isolinux/isolinux.bin
+test -s config/chroot_local-includes/root/isolinux/vesamenu.c32
 
 if [[ "$NO_DESKTOP" -eq 1 ]]; then
   sed -i '/^task-xfce-desktop$/d;/^task-laptop$/d;/^task-printing$/d;/^lightdm$/d;/^lightdm-gtk-greeter$/d;/^xfce4$/d;/^xfce4-session$/d;/^xfce4-panel$/d;/^xfdesktop4$/d;/^xfce4-terminal$/d;/^thunar$/d;/^firefox-esr$/d' "$BUILD_DIR/package-lists/nexos.list.chroot"
