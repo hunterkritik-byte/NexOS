@@ -1,0 +1,72 @@
+name: NexOS Hardware Smoke Tests
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'distro/config/**'
+      - '.github/workflows/hardware-smoke.yml'
+      - 'docs/HARDWARE-TESTING.md'
+
+jobs:
+  smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install hardware test tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y             bluez             bluez-tools             pipewire             wireplumber             alsa-utils             usbutils             pciutils             udev             util-linux             network-manager
+
+      - name: Kernel and architecture
+        run: |
+          set -eux
+          uname -a
+          test "$(uname -m)" = "x86_64"
+
+      - name: USB and PCI enumeration
+        run: |
+          set -eux
+          lsusb || true
+          lspci || true
+          udevadm info --export-db >/tmp/udev-db
+          test -s /tmp/udev-db
+
+      - name: Bluetooth software smoke test
+        run: |
+          set -eux
+          bluetoothctl --version
+          bluetoothd --version
+          bluetoothctl list || true
+          bluetoothctl show || true
+
+      - name: Audio software smoke test
+        run: |
+          set -eux
+          pipewire --version
+          wireplumber --version
+          wpctl --version
+          aplay --version
+          arecord --version
+          pw-cli info 0 || true
+
+      - name: NetworkManager smoke test
+        run: |
+          set -eux
+          nmcli --version
+          nmcli general status || true
+          nmcli device status || true
+
+      - name: NexOS hardware checker
+        run: |
+          set -eux
+          test -f distro/config/includes.chroot/usr/share/nexos/hardware-check.sh
+          sh -n distro/config/includes.chroot/usr/share/nexos/hardware-check.sh
+
+      - name: Report hardware limitation
+        run: |
+          echo "CI smoke tests validate NexOS/Linux tooling and enumeration."
+          echo "They do NOT prove physical Bluetooth, audio, USB, Wi-Fi, or microphone compatibility."
