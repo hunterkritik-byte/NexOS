@@ -1,0 +1,16 @@
+#!/bin/sh
+set -eu
+chmod +x /usr/local/bin/nexos
+
+# Ensure NetworkManager owns networking on the desktop.
+systemctl enable NetworkManager.service 2>/dev/null || true
+systemctl enable bluetooth.service 2>/dev/null || true
+
+# Enable the graphical login manager.
+systemctl enable lightdm.service 2>/dev/null || true
+
+# Keep the first boot useful even when optional hardware is absent.
+mkdir -p /etc/nexos
+printf '%s\n' "NexOS Linux — MADE BY KRITIK BHATTARAI" > /etc/nexos/welcome
+
+# Add common user-facing diagnostics to the default desktop menu.
