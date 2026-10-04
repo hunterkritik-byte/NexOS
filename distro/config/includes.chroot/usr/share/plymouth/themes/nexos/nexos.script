@@ -7,22 +7,17 @@ logo_sprite = Sprite(logo);
 logo_sprite.SetX(Window.GetX() + (Window.GetWidth() - logo.GetWidth()) / 2);
 logo_sprite.SetY(Window.GetY() + (Window.GetHeight() - logo.GetHeight()) / 2);
 
-# Real Plymouth animation: rotating progress indicator below the branding.
 spinner_images = [];
-for (i = 0; i < 12; i++) {
-  angle = i * 30;
-  # Each frame is generated from a small SVG arc so Plymouth can animate it.
-  spinner_images[i] = Image("spinner-" + i + ".png");
-}
+for (i = 0; i < 10; i++)
+  spinner_images[i] = Image("/usr/share/plymouth/themes/nexos/spinner-" + i + ".svg");
+
 spinner = Sprite();
-spinner.SetX(Window.GetX() + Window.GetWidth() / 2 - 18);
+spinner.SetX(Window.GetX() + Window.GetWidth() / 2 - 32);
 spinner.SetY(Window.GetY() + Window.GetHeight() / 2 + 300);
 
 frame = 0;
-Plymouth.SetRefreshFunction(
-  fun() {
-    spinner.SetImage(spinner_images[frame]);
-    frame = (frame + 1) % 12;
-    Plymouth.SetRefreshFunction(Plymouth.GetRefreshFunction(), 0.08);
-  }
-);
+fun refresh() {
+  spinner.SetImage(spinner_images[frame]);
+  frame = (frame + 1) % 10;
+}
+Plymouth.SetRefreshFunction(refresh, 0.10);
