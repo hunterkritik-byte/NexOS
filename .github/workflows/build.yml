@@ -9,6 +9,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: nexos-ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   kernel:
     runs-on: ubuntu-24.04
@@ -43,6 +47,7 @@ jobs:
   boot-image:
     needs: kernel
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
 
     steps:
       - uses: actions/checkout@v4
@@ -82,7 +87,7 @@ jobs:
       - name: Build NexOS boot images
         run: |
           mkdir -p dist
-          cargo run \
+          timeout --signal=TERM --kill-after=30s 5m cargo run \
             --release \
             --package nexos-image-builder \
             -- \
