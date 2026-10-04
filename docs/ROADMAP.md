@@ -76,7 +76,9 @@ This roadmap distinguishes source-code foundations from features that have been 
 - [x] Fixed-capacity window manager with stable IDs, z-order, focus, hit testing, move/resize, and close operations (host-side regression tests added; compositor not integrated)
 - [ ] Hardware-independent terminal rendering
 - [ ] USB HID keyboard/mouse support
+- [x] Host-testable desktop pointer routing: primary-click focus and title-bar dragging (requires a driver to feed mouse events; not wired into boot)
 - [x] Software compositor foundation that paints desktop background, window borders, and active/inactive title bars (host-side tests added; framebuffer and input integration still pending)
+- [x] Allocation-free bitmap graphics text console with clipped drawing and configurable colors (host-side tests added; boot shell integration still pending)
 - [ ] Window manager integration with live framebuffer and desktop shell
 - [ ] Settings and file manager
 
