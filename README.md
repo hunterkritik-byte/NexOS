@@ -39,7 +39,7 @@ On Debian/Ubuntu:
 ```sh
 sudo apt update
 sudo apt install live-build debootstrap qemu-system-x86 xorriso squashfs-tools
-sudo ./scripts/build-linux.sh
+sudo bash ./scripts/build-linux.sh
 ```
 
 The resulting image is:
@@ -52,7 +52,7 @@ dist/NexOS-Linux-amd64.iso.sha256
 For a smaller command-line image:
 
 ```sh
-sudo ./scripts/build-linux.sh --no-desktop
+sudo bash ./scripts/build-linux.sh --no-desktop
 ```
 
 The build uses Debian Live's live-build tooling to automate customized Debian live-system images.
