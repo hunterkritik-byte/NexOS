@@ -97,3 +97,7 @@ policykit-1
 desktop-base
 xdg-utils
 xorg
+
+wpasupplicant
+wireless-tools
+pulseaudio-utils
