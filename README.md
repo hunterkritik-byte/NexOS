@@ -91,7 +91,7 @@ The original Rust track remains available for OS research.
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) and [docs/LINUX-DISTRO.md](docs/LINUX-DISTRO.md).
 
-The immediate goal is a bootable, installable, QEMU-tested NexOS Linux image before adding deeper custom platform features.
+The immediate goal is a bootable, installable, QEMU-tested NexOS Linux image before adding deeper custom platform features. The CI pipeline builds the downloadable amd64 ISO and validates its boot structure before publishing the artifact.
 
 ## Development
 
