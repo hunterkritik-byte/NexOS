@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+<rect width="1920" height="1080" fill="#090d16"/>
+<circle cx="960" cy="440" r="150" fill="none" stroke="#ffffff" stroke-width="12" opacity=".9"/>
+<path d="M875 440 L945 510 L1045 370" fill="none" stroke="#ffffff" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="960" y="680" text-anchor="middle" font-family="DejaVu Sans, sans-serif" font-size="92" font-weight="700" fill="#ffffff">NEXOS</text>
+<text x="960" y="755" text-anchor="middle" font-family="DejaVu Sans, sans-serif" font-size="36" letter-spacing="5" fill="#d8dee9">MADE BY KRITIK BHATTARAI</text>
+<text x="960" y="825" text-anchor="middle" font-family="DejaVu Sans, sans-serif" font-size="25" fill="#9aa5b5">LINUX DISTRIBUTION</text>
+</svg>
