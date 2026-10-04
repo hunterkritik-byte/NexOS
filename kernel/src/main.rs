@@ -1,5 +1,6 @@
 #![cfg_attr(target_os = "none", no_std)]
 #![cfg_attr(target_os = "none", no_main)]
+#![allow(static_mut_refs)]
 #![cfg_attr(target_os = "none", feature(abi_x86_interrupt))]
 
 #[cfg(target_os = "none")]
