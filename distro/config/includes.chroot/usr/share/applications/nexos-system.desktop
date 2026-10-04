@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=NexOS System Tools
+Comment=Network, Bluetooth, audio, storage and system diagnostics
+Exec=xfce4-terminal --command=nexos-system
+Icon=utilities-system-monitor
+Terminal=false
+Categories=System;Utility;
