@@ -1,0 +1,10 @@
+NAME="NexOS Linux"
+PRETTY_NAME="NexOS Linux"
+ID=nexos
+ID_LIKE=debian
+VERSION_ID="0.1"
+VERSION="0.1"
+VERSION_CODENAME="trixie"
+HOME_URL="https://github.com/hunterkritik-byte/NexOS"
+SUPPORT_URL="https://github.com/hunterkritik-byte/NexOS/issues"
+BUG_REPORT_URL="https://github.com/hunterkritik-byte/NexOS/issues"
