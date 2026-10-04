@@ -1,3 +1,4 @@
+use core::mem::MaybeUninit;
 use x86_64::structures::gdt::{Descriptor, GlobalDescriptorTable, SegmentSelector};
 use x86_64::structures::tss::TaskStateSegment;
 use x86_64::{
@@ -6,6 +7,8 @@ use x86_64::{
     instructions::segmentation::CS,
     instructions::tables::load_tss,
 };
+
+static mut TSS_STORAGE: MaybeUninit<TaskStateSegment> = MaybeUninit::uninit();
 
 pub const DOUBLE_FAULT_IST_INDEX: u16 = 0;
 pub const USER_CODE_SELECTOR: u16 = 0x1b;
