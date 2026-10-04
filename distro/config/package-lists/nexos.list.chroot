@@ -101,3 +101,9 @@ xorg
 wpasupplicant
 wireless-tools
 pulseaudio-utils
+
+xfce4-settings
+apt
+procps
+util-linux
+dmidecode
