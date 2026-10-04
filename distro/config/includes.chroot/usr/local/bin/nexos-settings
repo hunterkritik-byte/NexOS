@@ -1,0 +1,6 @@
+#!/bin/sh
+set -eu
+if command -v xfce4-settings-manager >/dev/null 2>&1; then
+  exec xfce4-settings-manager
+fi
+exec xfce4-settings-editor
