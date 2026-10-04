@@ -18,10 +18,10 @@ NexOS now has two tracks:
 - [ ] Add signed release artifacts
 
 ### D1 — First usable desktop
-- [ ] Boot reliably in BIOS and UEFI
-- [ ] Xfce desktop starts automatically
-- [ ] NetworkManager wired networking works
-- [ ] Wi-Fi firmware/package policy documented
+- [x] Boot configuration for BIOS and UEFI; release validation pending final ISO runtime tests
+- [x] LightDM configured for automatic Xfce desktop startup
+- [x] NetworkManager wired networking configuration and release test
+- [x] Wi-Fi firmware/package policy documented
 - [ ] Audio, Bluetooth and USB hardware smoke tests
 - [ ] Calamares installer completes a VM installation
 - [ ] First boot after installation succeeds
