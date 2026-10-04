@@ -1,4 +1,10 @@
 # NexOS desktop/userland base
+task-xfce-desktop
+task-laptop
+task-printing
+xfce4-session
+xfce4-panel
+xfdesktop4
 plymouth
 plymouth-themes
 xfce4
