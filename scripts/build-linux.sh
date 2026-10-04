@@ -44,9 +44,7 @@ lb config \
   --archive-areas "main contrib non-free non-free-firmware" \
   --mirror-bootstrap "http://deb.debian.org/debian/" \
   --mirror-binary "http://deb.debian.org/debian/" \
-  --mirror-binary-security "http://security.debian.org/debian-security/" \
   --mirror-chroot "http://deb.debian.org/debian/" \
-  --mirror-chroot-security "http://security.debian.org/debian-security/" \
   --debian-installer live \
   --debian-installer-gui true \
   --memtest none \
