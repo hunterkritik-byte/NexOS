@@ -10,7 +10,7 @@ mod x86_kernel {
     use bootloader_api::config::Mapping;
     use core::fmt::Write;
     use x86_64::{VirtAddr, instructions::port::Port};
-    use crate::x86_kernel::arch::x86_64::{boot_memory::BootInfoFrameAllocator, paging};
+    use crate::arch::x86_64::{boot_memory::BootInfoFrameAllocator, paging};
 
     mod drivers;
     mod net;
@@ -19,9 +19,7 @@ mod x86_kernel {
     mod terminal;
     #[path = "../graphics/mod.rs"]
     mod graphics;
-    // Existing graphics modules use the crate-level window path.
     pub use graphics::window;
-    pub use crate::arch::x86_64;
 
     const VGA_BUFFER: usize = 0xb8000;
     const VGA_WIDTH: usize = 80;
@@ -391,7 +389,7 @@ mod x86_kernel {
             terminal.write_str("Memory: physical-memory mapping unavailable; isolation setup deferred.\n");
         }
         let kernel_stack_top = boot_info.kernel_stack_bottom.saturating_add(boot_info.kernel_stack_len);
-        unsafe { arch::x86_64::init_cpu_tables(kernel_stack_top); }
+        unsafe { crate::arch::x86_64::init_cpu_tables(kernel_stack_top); }
         let mut serial = unsafe { Serial::new() };
         let mut keyboard = unsafe { Keyboard::new() };
         boot_splash(&mut terminal);
