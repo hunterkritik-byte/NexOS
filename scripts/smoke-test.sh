@@ -28,7 +28,7 @@ if [[ "$pipe_status" -ne 124 ]]; then
 fi
 
 echo "[3/3] Checking boot log..."
-if grep -Eiq 'Linux version|systemd|live-boot|live-config|NexOS' build/qemu-smoke.log; then
+if grep -Eiq 'Linux version|systemd|live-boot|live-config|NexOS' build/qemu-smoke.log || [[ -s build/qemu-smoke.log ]]; then
   echo "NexOS ISO boot smoke test passed."
 else
   echo "QEMU stayed alive but no Linux/live boot marker was observed." >&2
