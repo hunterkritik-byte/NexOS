@@ -45,15 +45,22 @@ lb config \
   --mirror-bootstrap "http://deb.debian.org/debian/" \
   --mirror-binary "http://deb.debian.org/debian/" \
   --mirror-chroot "http://deb.debian.org/debian/" \
-  --mirror-bootstrap-security "http://deb.debian.org/debian-security/" \
-  --mirror-chroot-security "http://deb.debian.org/debian-security/" \
-  --mirror-binary-security "http://deb.debian.org/debian-security/" \
   --debian-installer live \
   --debian-installer-gui true \
   --memtest none \
   --apt-recommends true \
   --linux-packages "linux-image linux-headers" \
   --bootappend-live "boot=live components username=nexos hostname=nexos console=ttyS0,115200"
+
+# live-build 3.x on Ubuntu does not accept the newer security-mirror flags.
+# Normalize its generated Trixie security suite before the build starts.
+while IFS= read -r -d "" file; do
+  sed -i \
+    -e "s#security.debian.org/debian-security#deb.debian.org/debian-security#g" \
+    -e "s#security.debian.org#deb.debian.org/debian-security#g" \
+    -e "s#trixie/updates#trixie-security#g" \
+    "$file"
+done < <(grep -RIlZ -E "security\\.debian\\.org|trixie/updates" config || true)
 
 lb build 2>&1 | tee "$ROOT_DIR/build/nexos-live-build.log"
 
