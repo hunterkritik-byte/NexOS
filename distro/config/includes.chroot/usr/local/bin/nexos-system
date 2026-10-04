@@ -1,0 +1,31 @@
+#!/bin/sh
+set -eu
+cmd="${1:-help}"
+case "$cmd" in
+  help)
+    cat <<'EOF'
+NexOS System Tools
+  info       System and kernel information
+  doctor     Hardware/service diagnostics
+  network    NetworkManager status
+  wifi       Wi-Fi status and networks
+  bluetooth  Bluetooth status
+  audio      Audio devices and server status
+  storage    Disk and filesystem information
+  updates    Check for available updates
+  clean      Clean package cache
+  settings   Open NexOS desktop settings
+EOF
+    ;;
+  info) nexos info ;;
+  doctor) nexos doctor; sudo /usr/share/nexos/hardware-check.sh ;;
+  network) nmcli general status; nmcli device status ;;
+  wifi) nmcli radio wifi; nmcli device wifi list ;;
+  bluetooth) bluetoothctl show || true; systemctl --no-pager status bluetooth || true ;;
+  audio) wpctl status || true; systemctl --user --no-pager status pipewire wireplumber pipewire-pulse || true ;;
+  storage) lsblk -o NAME,SIZE,TYPE,FSTYPE,MOUNTPOINTS; udisksctl status || true ;;
+  updates) apt-get update; apt list --upgradable 2>/dev/null || true ;;
+  clean) sudo apt-get clean ;;
+  settings) exec nexos-settings ;;
+  *) echo "Unknown command: $cmd"; exit 2 ;;
+esac
