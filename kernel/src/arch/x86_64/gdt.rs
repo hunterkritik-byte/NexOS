@@ -27,7 +27,7 @@ pub struct GlobalTables {
 impl GlobalTables {
     pub unsafe fn new(kernel_stack_top: u64) -> Self {
         TSS_STORAGE.write(TaskStateSegment::new());
-        let tss = &mut *TSS_STORAGE.as_mut_ptr();
+        let tss: &'static mut TaskStateSegment = &mut *TSS_STORAGE.as_mut_ptr();
         tss.privilege_stack_table[0] = VirtAddr::new(kernel_stack_top);
 
         let mut gdt = GlobalDescriptorTable::new();
@@ -35,7 +35,7 @@ impl GlobalTables {
         let data = gdt.append(Descriptor::kernel_data_segment());
         let user_code = gdt.append(Descriptor::user_code_segment());
         let user_data = gdt.append(Descriptor::user_data_segment());
-        let tss_selector = gdt.append(Descriptor::tss_segment(&tss));
+        let tss_selector = gdt.append(Descriptor::tss_segment(tss));
 
         Self { gdt, code, data, user_code, user_data, tss_selector, tss: &*tss }
     }
