@@ -58,7 +58,7 @@ if [[ "$NO_DESKTOP" -eq 0 ]]; then
 fi
 
 # Do not manufacture /root/isolinux links. live-build owns bootloader staging.
-lb config   --mode debian   --distribution trixie   --architectures amd64   --binary-images iso-hybrid   --archive-areas "main contrib non-free non-free-firmware"   --mirror-bootstrap "http://deb.debian.org/debian/"   --mirror-binary "http://deb.debian.org/debian/"   --mirror-binary-security "http://deb.debian.org/debian-security/"   --mirror-chroot "http://deb.debian.org/debian/"   --mirror-chroot-security "http://deb.debian.org/debian-security/"   --debian-installer false   --initsystem systemd   --memtest none   --apt-indices false   --apt-source-archives false   --apt-recommends true   --linux-packages "none"   --bootappend-live "boot=live components username=nexos hostname=nexos"
+lb config   --mode debian   --distribution trixie   --architectures amd64   --binary-images iso-hybrid   --archive-areas "main contrib non-free non-free-firmware"   --mirror-bootstrap "http://deb.debian.org/debian/"   --mirror-binary "http://deb.debian.org/debian/"   --mirror-chroot "http://deb.debian.org/debian/"   --debian-installer false   --initsystem systemd   --memtest none   --apt-indices false   --apt-source-archives false   --apt-recommends true   --linux-packages "none"   --bootappend-live "boot=live components username=nexos hostname=nexos"
 
 lb build 2>&1 | tee "$ROOT_DIR/build/nexos-live-build.log"
 
