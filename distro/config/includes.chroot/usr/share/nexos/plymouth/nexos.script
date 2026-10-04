@@ -1,0 +1,16 @@
+Window.SetBackgroundTopColor(0.035, 0.055, 0.090);
+Window.SetBackgroundBottomColor(0.035, 0.055, 0.090);
+
+title = Sprite();
+title.SetX(Window.GetWidth() / 2 - 260);
+title.SetY(Window.GetHeight() / 2 - 75);
+title.SetText("NEXOS");
+title.SetFont("Sans Bold 64");
+title.SetColor(1, 1, 1);
+
+subtitle = Sprite();
+subtitle.SetX(Window.GetWidth() / 2 - 300);
+subtitle.SetY(Window.GetHeight() / 2 + 15);
+subtitle.SetText("MADE BY KRITIK BHATTARAI");
+subtitle.SetFont("Sans 26");
+subtitle.SetColor(0.85, 0.88, 0.93);
