@@ -1,5 +1,5 @@
 pub mod device {
-    use crate::x86_kernel::drivers::{NetworkKind, PciDevice};
+    use crate::x86_kernel::drivers::{network::NetworkKind, PciDevice};
 
     #[derive(Clone, Copy)]
     pub struct RegisteredPci { pub pci: PciDevice }
