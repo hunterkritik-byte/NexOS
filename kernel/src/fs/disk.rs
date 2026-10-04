@@ -4,8 +4,8 @@ pub enum DiskError { OutOfBounds, NotReady, ReadOnly, InvalidBuffer }
 pub trait BlockDevice {
     const BLOCK_SIZE: usize = 512;
     fn block_count(&self) -> u64;
-    fn read_block(&mut self, block:u64, dst:&mut [u8;Self::BLOCK_SIZE])->Result<(),DiskError>;
-    fn write_block(&mut self, block:u64, src:&[u8;Self::BLOCK_SIZE])->Result<(),DiskError>;
+    fn read_block(&mut self, block:u64, dst:&mut [u8;512])->Result<(),DiskError>;
+    fn write_block(&mut self, block:u64, src:&[u8;512])->Result<(),DiskError>;
 }
 
 /// ATA PIO primary-master disk. This is intentionally synchronous; IRQ/DMA can
