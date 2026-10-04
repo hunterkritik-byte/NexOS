@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=NexOS Recovery Tools
+Comment=Diagnose and repair NexOS
+Exec=xfce4-terminal --command=nexos-recovery
+Icon=system-reboot
+Terminal=false
+Categories=System;Utility;
