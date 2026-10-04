@@ -1,0 +1,29 @@
+#!/bin/sh
+set -eu
+
+chmod 0755 /usr/local/bin/nexos-recovery /usr/local/bin/nexos-firstboot
+chmod 0644 /usr/share/applications/nexos-recovery.desktop
+
+# Calamares is launched from the desktop when installed in the image.
+if command -v calamares >/dev/null 2>&1; then
+  mkdir -p /usr/share/applications
+fi
+
+# First-boot service is deliberately lightweight and idempotent.
+mkdir -p /etc/systemd/system
+cat > /etc/systemd/system/nexos-firstboot.service <<'EOF'
+[Unit]
+Description=NexOS first boot initialization
+After=graphical.target
+ConditionPathExists=!/var/lib/nexos/firstboot-complete
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/nexos-firstboot
+RemainAfterExit=yes
+
+[Install]
+WantedBy=graphical.target
+EOF
+
+systemctl enable nexos-firstboot.service 2>/dev/null || true
