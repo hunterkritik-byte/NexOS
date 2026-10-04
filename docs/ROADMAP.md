@@ -22,12 +22,12 @@ NexOS now has two tracks:
 - [x] LightDM configured for automatic Xfce desktop startup
 - [x] NetworkManager wired networking configuration and release test
 - [x] Wi-Fi firmware/package policy documented
-- [ ] Audio, Bluetooth and USB hardware smoke tests
+- [x] CI audio, Bluetooth and USB interface smoke tests; physical hardware validation remains a release gate
 - [x] Calamares installer launcher and installation documentation
 - [x] First-boot service and first-boot documentation
 - [x] NexOS first-boot welcome/help experience
-- [ ] Custom NEXOS boot splash: "NEXOS — MADE BY KRITIK BHATTARAI"
-- [ ] Default desktop wallpaper and theme
+- [x] Custom NEXOS boot splash: "NEXOS — MADE BY KRITIK BHATTARAI"
+- [x] Default desktop wallpaper and theme
 - [x] File manager, terminal, browser and settings package foundation
 - [x] Wi-Fi, Bluetooth, audio and printing package foundation
 
@@ -38,13 +38,13 @@ NexOS now has two tracks:
 - [x] NexOS configuration package
 - [ ] First-party package repository
 - [ ] Signed package metadata
-- [ ] Release manifest and SBOM
+- [x] Release manifest; SBOM generation remains a release-pipeline task
 
 ### D3 — Security and reliability
-- [ ] Secure defaults
-- [ ] Automatic security update policy
-- [ ] AppArmor profile set
-- [ ] Firewall defaults
+- [x] Secure defaults
+- [x] Automatic security update policy
+- [x] AppArmor profile set foundation
+- [x] Firewall defaults
 - [x] NexOS recovery tools
 - [ ] Rollback/update recovery strategy
 - [ ] Reproducible image verification
