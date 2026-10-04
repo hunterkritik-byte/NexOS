@@ -40,7 +40,9 @@ fi
 cd "$BUILD_DIR"
 
 rm -rf config/chroot_local-includes config/includes.binary
-mkdir -p config/chroot_local-includes
+mkdir -p config/chroot_local-includes/root/isolinux
+ln -s /usr/lib/ISOLINUX/isolinux.bin config/chroot_local-includes/root/isolinux/isolinux.bin
+ln -s /usr/lib/syslinux/modules/bios/vesamenu.c32 config/chroot_local-includes/root/isolinux/vesamenu.c32
 mkdir -p config/hooks/normal
 cat > config/hooks/normal/9900-fix-isolinux-links.hook.chroot <<'HOOK'
 #!/bin/sh
