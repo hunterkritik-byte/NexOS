@@ -54,7 +54,7 @@ lb config \
   --apt-indices false \
   --apt-source-archives false \
   --apt-recommends true \
-  --linux-packages "linux-image linux-headers" \
+  --linux-packages "none" \
   --bootappend-live "boot=live components username=nexos hostname=nexos console=ttyS0,115200"
 
 lb build 2>&1 | tee "$ROOT_DIR/build/nexos-live-build.log"
