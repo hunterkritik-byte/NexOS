@@ -40,14 +40,6 @@ fi
 cd "$BUILD_DIR"
 
 rm -rf config/chroot_local-includes config/includes.binary
-mkdir -p config/chroot_local-includes/root/isolinux
-
-# live-build's bootloader assets are host-side files. Copy the real files
-# into the chroot instead of creating absolute symlinks that are broken
-# inside the chroot namespace during lb_binary_syslinux.
-LB_BOOTLOADER_DIR="/usr/share/live/build/bootloaders"
-test -f "$LB_BOOTLOADER_DIR/isolinux/isolinux.bin" || {
-  echo "ERROR: live-build ISOLINUX bootloader asset is missing" >&2
   dpkg -L live-build | grep -E '/isolinux\.binif [[ "$NO_DESKTOP" -eq 1 ]]; then
   sed -i '/^task-xfce-desktop$/d;/^task-laptop$/d;/^task-printing$/d;/^lightdm$/d;/^lightdm-gtk-greeter$/d;/^xfce4$/d;/^xfce4-session$/d;/^xfce4-panel$/d;/^xfdesktop4$/d;/^xfce4-terminal$/d;/^thunar$/d;/^firefox-esr$/d' "$BUILD_DIR/package-lists/nexos.list.chroot"
 fi
