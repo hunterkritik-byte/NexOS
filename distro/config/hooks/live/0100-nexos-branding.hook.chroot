@@ -1,0 +1,14 @@
+#!/bin/sh
+set -eu
+
+mkdir -p /usr/share/plymouth/themes/nexos
+cp /usr/share/nexos/plymouth/nexos.plymouth /usr/share/plymouth/themes/nexos/nexos.plymouth
+cp /usr/share/nexos/plymouth/nexos.script /usr/share/plymouth/themes/nexos/nexos.script
+
+if command -v plymouth-set-default-theme >/dev/null 2>&1; then
+  plymouth-set-default-theme nexos || true
+fi
+
+if command -v update-initramfs >/dev/null 2>&1; then
+  update-initramfs -u -k all || true
+fi
