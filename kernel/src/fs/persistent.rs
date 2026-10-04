@@ -294,7 +294,7 @@ impl<D: BlockDevice> PersistentFs<D> {
         Ok(copied)
     }
 
-    pub fn list(&self, out: &mut [&[u8]; MAX_FILES]) -> usize {
+    pub fn list<'a>(&'a self, out: &mut [&'a [u8]; MAX_FILES]) -> usize {
         let mut count = 0;
         for entry in &self.entries {
             if entry.used == 1 && count < out.len() {
