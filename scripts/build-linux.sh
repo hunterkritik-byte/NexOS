@@ -41,6 +41,17 @@ cd "$BUILD_DIR"
 
 rm -rf config/chroot_local-includes config/includes.binary
 mkdir -p config/chroot_local-includes
+mkdir -p config/hooks/normal
+cat > config/hooks/normal/9900-fix-isolinux-links.hook.chroot <<'HOOK'
+#!/bin/sh
+set -eu
+mkdir -p /root/isolinux
+rm -f /root/isolinux/isolinux.bin /root/isolinux/vesamenu.c32
+ln -s /usr/lib/ISOLINUX/isolinux.bin /root/isolinux/isolinux.bin
+ln -s /usr/lib/syslinux/modules/bios/vesamenu.c32 /root/isolinux/vesamenu.c32
+HOOK
+chmod +x config/hooks/normal/9900-fix-isolinux-links.hook.chroot
+
 
 if [[ "$NO_DESKTOP" -eq 1 ]]; then
   sed -i '/^task-xfce-desktop$/d;/^task-laptop$/d;/^task-printing$/d;/^lightdm$/d;/^lightdm-gtk-greeter$/d;/^xfce4$/d;/^xfce4-session$/d;/^xfce4-panel$/d;/^xfdesktop4$/d;/^xfce4-terminal$/d;/^thunar$/d;/^firefox-esr$/d' "$BUILD_DIR/package-lists/nexos.list.chroot"
