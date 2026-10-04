@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "distro/**"
+      - "kernel/**"
       - "scripts/build-linux.sh"
       - "scripts/smoke-test.sh"
       - ".github/workflows/linux-distro.yml"
