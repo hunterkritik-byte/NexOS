@@ -1,26 +1,35 @@
 # NexOS Architecture
 
-NexOS is being developed as an independent operating system. The kernel is NexKernel; it is not based on the Linux or BSD kernels.
+NexOS has two explicit engineering tracks.
 
-## Current execution path
+## Primary: NexOS Linux
 
-UEFI or BIOS -> bootloader -> NexKernel -> early serial console
+NexOS Linux is a Debian-based Linux distribution. The Linux kernel supplies hardware compatibility and the core kernel ABI; NexOS owns the distribution layer.
 
-The Rust bootloader crate is used as the loading layer. NexKernel is the operating-system kernel being developed in this repository.
+```
+Firmware
+  -> bootloader / Debian Live
+  -> Linux kernel
+  -> systemd
+  -> Debian userspace
+  -> NexOS packages and configuration
+  -> NexOS desktop and applications
+```
 
-## Kernel boundaries
+This is the path intended to become the usable, installable NexOS product.
 
-Planned kernel subsystems:
+## Research: NexKernel
 
-- arch: CPU and architecture-specific code
-- mm: physical and virtual memory
-- interrupts: exceptions and interrupt routing
-- sched: processes, threads, and scheduling
-- syscall: user/kernel interface
-- ipc: inter-process communication
-- fs: VFS and filesystems
-- drivers: hardware drivers
-- net: networking
-- security: isolation and hardening
+The repository also contains the original from-scratch Rust kernel work:
 
-A subsystem is considered implemented only after it performs real work on the target machine.
+```
+Firmware -> Rust bootloader -> NexKernel -> experimental userspace
+```
+
+NexKernel is not currently the kernel of NexOS Linux. It is retained for low-level operating-system research, experiments, and future evaluation.
+
+## Design principle
+
+Prefer upstream Linux/Debian components when they provide mature hardware support and security updates. Build NexOS-specific functionality above them unless there is a concrete reason to fork or replace a subsystem.
+
+A subsystem is considered production-ready only after integration, testing, recovery behavior, and documented hardware compatibility.
