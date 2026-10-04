@@ -1,0 +1,10 @@
+#!/bin/sh
+set -eu
+chmod 0755 /usr/local/bin/nexos-settings /usr/local/bin/nexos-system
+chmod 0644 /usr/share/applications/nexos-settings.desktop /usr/share/applications/nexos-system.desktop
+mkdir -p /etc/nexos
+cat > /etc/nexos/defaults <<'EOF'
+NEXOS_DESKTOP="Xfce"
+NEXOS_SETTINGS="nexos-settings"
+NEXOS_SYSTEM_TOOLS="nexos-system"
+EOF
