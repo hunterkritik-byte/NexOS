@@ -1,4 +1,4 @@
-use crate::window::{Rect, WindowManager};
+use super::window::{Rect, WindowManager};
 
 pub type Color = [u8; 3];
 
