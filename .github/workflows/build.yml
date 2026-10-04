@@ -176,6 +176,14 @@ jobs:
             grub-pc-bin grub-efi-amd64-bin ovmf \
             dosfstools mtools ca-certificates
 
+      - name: Install ISOLINUX bootloader files
+        run: |
+          sudo mkdir -p /root/isolinux
+          sudo cp /usr/lib/ISOLINUX/isolinux.bin /root/isolinux/isolinux.bin
+          sudo cp /usr/lib/syslinux/modules/bios/vesamenu.c32 /root/isolinux/vesamenu.c32
+          test -s /root/isolinux/isolinux.bin
+          test -s /root/isolinux/vesamenu.c32
+
       - name: Build full NexOS Desktop ISO
         run: |
           chmod +x scripts/build-linux.sh
