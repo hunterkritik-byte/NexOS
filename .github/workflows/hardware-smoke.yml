@@ -40,8 +40,8 @@ jobs:
           set -eux
           bluetoothctl --version
           bluetoothd --version
-          bluetoothctl list || true
-          bluetoothctl show || true
+          timeout 10s bluetoothctl list || true
+          timeout 10s bluetoothctl show || true
 
       - name: Audio software smoke test
         run: |
@@ -51,14 +51,14 @@ jobs:
           wpctl --version
           aplay --version
           arecord --version
-          pw-cli info 0 || true
+          timeout 10s pw-cli info 0 || true
 
       - name: NetworkManager smoke test
         run: |
           set -eux
           nmcli --version
-          nmcli general status || true
-          nmcli device status || true
+          timeout 10s nmcli general status || true
+          timeout 10s nmcli device status || true
 
       - name: NexOS hardware checker
         run: |
