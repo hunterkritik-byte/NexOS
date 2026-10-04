@@ -1,1 +1,30 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080"><rect width="1920" height="1080" fill="#101722"/><circle cx="960" cy="500" r="260" fill="#182b42"/><text x="960" y="500" fill="#e6ebf2" font-family="sans-serif" font-size="96" text-anchor="middle" font-weight="700">NEXOS</text><text x="960" y="590" fill="#8fc7ff" font-family="sans-serif" font-size="34" text-anchor="middle">MADE BY KRITIK BHATTARAI</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+<defs>
+  <radialGradient id="bg" cx="50%" cy="45%" r="75%">
+    <stop offset="0" stop-color="#142b45"/>
+    <stop offset="0.55" stop-color="#0b1727"/>
+    <stop offset="1" stop-color="#050a12"/>
+  </radialGradient>
+  <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#6ee7ff"/>
+    <stop offset="0.5" stop-color="#3b82f6"/>
+    <stop offset="1" stop-color="#7c3aed"/>
+  </linearGradient>
+  <filter id="glow"><feGaussianBlur stdDeviation="18" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<rect width="1920" height="1080" fill="url(#bg)"/>
+<circle cx="960" cy="500" r="280" fill="none" stroke="#3b82f6" stroke-opacity=".08" stroke-width="2"/>
+<circle cx="960" cy="500" r="220" fill="none" stroke="#6ee7ff" stroke-opacity=".06" stroke-width="2"/>
+<path d="M640 500 A320 320 0 0 1 1280 500" fill="none" stroke="url(#accent)" stroke-opacity=".16" stroke-width="3"/>
+<g filter="url(#glow)">
+  <circle cx="960" cy="500" r="94" fill="#0d2137" stroke="url(#accent)" stroke-width="3"/>
+  <path d="M914 530 L914 470 L960 430 L1006 470 L1006 530 L975 530 L975 486 L945 486 L945 530 Z" fill="url(#accent)"/>
+</g>
+<text x="960" y="680" fill="#f4f8ff" font-family="DejaVu Sans,Arial,sans-serif" font-size="104" font-weight="700" letter-spacing="18" text-anchor="middle">NEXOS</text>
+<text x="960" y="735" fill="#8fcfff" font-family="DejaVu Sans,Arial,sans-serif" font-size="25" letter-spacing="7" text-anchor="middle">MADE BY KRITIK BHATTARAI</text>
+<g transform="translate(960 815)">
+  <circle r="25" fill="none" stroke="#ffffff" stroke-opacity=".16" stroke-width="5"/>
+  <path d="M0 -25 A25 25 0 0 1 24 7" fill="none" stroke="url(#accent)" stroke-width="5" stroke-linecap="round"/>
+</g>
+<text x="960" y="875" fill="#71839b" font-family="DejaVu Sans,Arial,sans-serif" font-size="18" letter-spacing="4" text-anchor="middle">STARTING NEXOS</text>
+</svg>
