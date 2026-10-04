@@ -20,7 +20,10 @@ fn formats_and_mounts_an_empty_filesystem() {
     let mut names: [&[u8]; 32] = [&[]; 32];
     let count = fs.list(&mut names);
     assert_eq!(count, 5);
-    assert_eq!(\n        &names[..count],\n        &[&b"/"[..], &b"bin"[..], &b"etc"[..], &b"home"[..], &b"tmp"[..]],\n    );
+    assert_eq!(
+        &names[..count],
+        &[&b"/"[..], &b"bin"[..], &b"etc"[..], &b"home"[..], &b"tmp"[..]],
+    );
 }
 
 #[test]
