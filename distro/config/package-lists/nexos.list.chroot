@@ -30,8 +30,17 @@ firefox-esr
 
 # Installer / live support
 calamares
+calamares-settings-debian
 live-boot
+live-boot-initramfs-tools
 live-config
+live-config-systemd
+firmware-linux-free
+firmware-iwlwifi
+firmware-realtek
+firmware-atheros
+firmware-brcm80211
+firmware-mediatek
 
 # NexOS developer/system tools
 build-essential
