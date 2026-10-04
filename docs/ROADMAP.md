@@ -58,7 +58,7 @@ NexOS now has two tracks:
 - [x] Hardware compatibility matrix
 
 ### D5 — Advanced platform
-- [ ] ARM64 image
+- [ ] x64 image
 - [ ] Optional NexOS kernel configuration
 - [ ] NexOS-specific low-level services where justified
 - [ ] Developer SDK
