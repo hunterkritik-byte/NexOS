@@ -98,3 +98,21 @@ The desktop profile also includes:
 - Broad printer-driver support and Simple Scan
 - GVFS removable-device support
 - MTP/JMTPFS tools for compatible Android/mobile devices
+
+
+## Final convenience and diagnostics
+
+The desktop profile also provides:
+- Trash/recycle-bin support
+- Disk and storage inspection with GNOME Disks and Baobab
+- SMART health monitoring
+- Optional Timeshift snapshots and Rsync backups
+- VPN plugins for common NetworkManager VPN types
+- Avahi/mDNS discovery
+- Printer/scanner support
+- PulseAudio/PipeWire control through Pavucontrol
+- Brightness, ACPI and sensor utilities
+- System diagnostics through Inxi
+- Standard man pages, Bash completion, tmux/screen and common CLI utilities
+
+These packages complement the core desktop; they do not replace runtime hardware validation.
