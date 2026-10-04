@@ -18,6 +18,8 @@ pub const SYS_GETPID: u64 = 3;
 
 static VGA_CURSOR: AtomicUsize = AtomicUsize::new(0);
 
+unsafe extern "C" { fn nexos_int80_entry(); }
+
 core::arch::global_asm!(
     ".globl nexos_int80_entry",
     "nexos_int80_entry:",
