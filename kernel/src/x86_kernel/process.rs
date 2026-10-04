@@ -1,3 +1,6 @@
+use core::fmt;
+use x86_64::{VirtAddr, structures::paging::{FrameAllocator, PageTable, Size4KiB}};
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ProcessError { InvalidElf, Unsupported, NoMemory }
 
@@ -11,14 +14,15 @@ pub fn find_init_elf(_ramdisk: &[u8]) -> Result<&[u8], ProcessError> {
 }
 
 pub unsafe fn build_elf_process(
-    _physical_offset: x86_64::VirtAddr,
-    _active: &x86_64::structures::paging::PageTable,
-    _allocator: &mut impl x86_64::structures::paging::FrameAllocator<Size4KiB>,
+    _physical_offset: VirtAddr,
+    _active: &PageTable,
+    _allocator: &mut impl FrameAllocator<Size4KiB>,
     _image: &[u8],
 ) -> Result<UserProcess, ProcessError> {
     Err(ProcessError::Unsupported)
 }
 
+#[derive(Clone, Copy)]
 pub struct Process { pub entry: usize, pub stack_top: usize }
 impl Process { pub const fn new(entry: usize, stack_top: usize) -> Self { Self { entry, stack_top } } }
 
@@ -35,4 +39,15 @@ impl Scheduler {
 
 pub unsafe fn launch_user_process(_process: UserProcess) -> ! {
     loop { core::hint::spin_loop(); }
+}
+
+impl fmt::Display for ProcessError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let name = match self {
+            Self::InvalidElf => "invalid ELF",
+            Self::Unsupported => "unsupported ELF/process operation",
+            Self::NoMemory => "out of memory",
+        };
+        f.write_str(name)
+    }
 }
