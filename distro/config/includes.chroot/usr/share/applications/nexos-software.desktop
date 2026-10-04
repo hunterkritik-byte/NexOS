@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=NexOS Software
+GenericName=Software Center
+Comment=Install and remove Debian packages
+Exec=xfce4-terminal --command="sudo apt update && apt list --upgradable"
+Icon=system-software-install
+Terminal=false
+Categories=System;Settings;
