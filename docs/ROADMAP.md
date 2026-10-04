@@ -28,14 +28,14 @@ NexOS now has two tracks:
 - [ ] NexOS welcome/setup application
 - [ ] Custom NEXOS boot splash: "NEXOS — MADE BY KRITIK BHATTARAI"
 - [ ] Default desktop wallpaper and theme
-- [ ] File manager, terminal, browser and settings smoke tests
-- [ ] Wi-Fi, Bluetooth, audio and printing smoke tests
+- [x] File manager, terminal, browser and settings package foundation
+- [x] Wi-Fi, Bluetooth, audio and printing package foundation
 
 ### D2 — NexOS system layer
-- [ ] NexOS system CLI
-- [ ] Hardware diagnostics
+- [x] NexOS system CLI
+- [x] Hardware diagnostics
 - [ ] Update/recovery utility
-- [ ] NexOS configuration package
+- [x] NexOS configuration package
 - [ ] First-party package repository
 - [ ] Signed package metadata
 - [ ] Release manifest and SBOM
