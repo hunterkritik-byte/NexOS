@@ -27,6 +27,7 @@ jobs:
         run: |
           apt-get update
           DEBIAN_FRONTEND=noninteractive apt-get install -y \
+            live-config live-boot
             live-build debootstrap qemu-system-x86 xorriso squashfs-tools \
             grub-pc-bin grub-efi-amd64-bin ovmf ca-certificates file
 
