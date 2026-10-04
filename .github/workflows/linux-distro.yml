@@ -12,6 +12,7 @@ on:
   pull_request:
     paths:
       - "distro/**"
+      - "kernel/**"
       - "scripts/build-linux.sh"
       - "scripts/smoke-test.sh"
       - ".github/workflows/linux-distro.yml"
@@ -26,10 +27,9 @@ jobs:
 
       - name: Install Debian build dependencies
         run: |
-          apt-get update
-          DEBIAN_FRONTEND=noninteractive apt-get install -y \
-            live-config live-boot
-            live-build debootstrap qemu-system-x86 xorriso squashfs-tools \
+          sudo apt-get update
+          DEBIAN_FRONTEND=noninteractive sudo apt-get install -y \
+            live-config live-boot live-build debootstrap qemu-system-x86 xorriso squashfs-tools \
             grub-pc-bin grub-efi-amd64-bin ovmf ca-certificates file
 
       - name: Build NexOS Linux x64 ISO
