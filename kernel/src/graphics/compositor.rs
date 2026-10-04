@@ -36,7 +36,16 @@ impl Default for Theme {
 /// cursors, or application contents.
 pub fn render<C: PixelCanvas>(canvas: &mut C, manager: &WindowManager, theme: Theme) {
     let (width, height) = canvas.dimensions();
-    fill_rect(\n        canvas,\n        Rect {\n            x: 0,\n            y: 0,\n            width,\n            height,\n        },\n        theme.desktop,\n    );
+    fill_rect(
+        canvas,
+        Rect {
+            x: 0,
+            y: 0,
+            width,
+            height,
+        },
+        theme.desktop,
+    );
 
     for (_, window) in manager.z_ordered() {
         let bounds = clip_rect(window.bounds, width, height);
@@ -68,7 +77,11 @@ pub fn render<C: PixelCanvas>(canvas: &mut C, manager: &WindowManager, theme: Th
                     width: bounds.width - 2,
                     height: title_height,
                 },
-                if window.focused {\n                    theme.title_active\n                } else {\n                    theme.title_inactive\n                },
+                if window.focused {
+                    theme.title_active
+                } else {
+                    theme.title_inactive
+                },
             );
         }
     }
@@ -76,7 +89,12 @@ pub fn render<C: PixelCanvas>(canvas: &mut C, manager: &WindowManager, theme: Th
 
 fn clip_rect(rect: Rect, width: usize, height: usize) -> Rect {
     if rect.x >= width || rect.y >= height {
-        return Rect {\n            x: rect.x,\n            y: rect.y,\n            width: 0,\n            height: 0,\n        };
+        return Rect {
+            x: rect.x,
+            y: rect.y,
+            width: 0,
+            height: 0,
+        };
     }
     Rect {
         x: rect.x,
