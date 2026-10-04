@@ -38,7 +38,6 @@ jobs:
           test -s dist/NexOS-Linux-x64.iso
           test "$(stat -c %s dist/NexOS-Linux-x64.iso)" -gt 50000000
           sha256sum -c dist/NexOS-Linux-x64.iso.sha256
-            dist/NexOS-Linux-x64.iso.sha512
           sha512sum dist/NexOS-Linux-x64.iso > dist/NexOS-Linux-x64.iso.sha512
           echo 'ISO size:'
           du -h dist/NexOS-Linux-x64.iso
@@ -57,4 +56,5 @@ jobs:
           path: |
             dist/NexOS-Linux-x64.iso
             dist/NexOS-Linux-x64.iso.sha256
+            dist/NexOS-Linux-x64.iso.sha512
           retention-days: 30
