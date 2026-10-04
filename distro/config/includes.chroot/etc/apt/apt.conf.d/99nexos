@@ -1,0 +1,3 @@
+Acquire::Retries "3";
+APT::Install-Recommends "1";
+APT::Get::Assume-Yes "true";

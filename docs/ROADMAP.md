@@ -1,95 +1,65 @@
 # NexOS Roadmap
 
-This roadmap distinguishes source-code foundations from features that have been integrated and tested on a running machine. A module or API alone does not count as a working feature.
+NexOS now has two tracks:
 
-## Phase 0 — Build and boot foundation
-- [x] Rust workspace and pinned nightly toolchain
-- [x] NexKernel x86_64 crate
-- [x] BIOS and UEFI disk-image generation code
-- [ ] Keep formatting, workspace checks, and kernel builds green in CI
-- [ ] Verify serial boot output and successful handoff in QEMU for both firmware paths
-- [ ] Make release artifacts reproducible and validate image contents
+- **NexOS Linux** — the primary product: a practical Linux distribution based on Debian.
+- **NexKernel research** — the original from-scratch Rust kernel project, kept for OS research and experimentation.
 
-## Phase 1 — Kernel fundamentals
-- [x] GDT/TSS and IDT setup foundations
-- [x] Bootloader memory-map integration
-- [x] Usable physical-frame allocator foundation
-- [x] Active page-table mapper foundation
-- [ ] Kernel heap allocator
-- [ ] Robust exception handlers with useful diagnostics
-- [ ] Timer/clock source and timer interrupts
-- [ ] SMP and per-CPU initialization
+## Distribution track
 
-## Phase 2 — Execution and isolation
-- [x] Process metadata and fixed-capacity scheduler prototype
-- [x] ELF64 header inspection and user-process mapping foundations
-- [x] Syscall entry and user launch foundations
-- [ ] Demonstrate safe ring-3 execution and return to the kernel
-- [ ] Preemptive scheduling and context switching
-- [ ] Enforce per-process address-space isolation and permissions
-- [ ] Process exit, wait, signals/events, and IPC
-- [ ] Regression tests for syscall boundary validation
+### D0 — Linux foundation
+- [x] Choose Debian 13 trixie as the Linux base
+- [x] Add live-build based ISO pipeline
+- [x] Add NexOS release metadata and branding
+- [x] Add core/desktop package profile
+- [x] Add ISO checksum generation
+- [x] Add GitHub Actions build validation
+- [ ] Produce and QEMU-test a successful CI ISO
+- [ ] Add signed release artifacts
 
-## Phase 3 — Terminal and userspace
-- [x] VGA text output and scrolling
-- [x] Basic PS/2 keyboard input
-- [x] Basic kernel shell command loop
-- [x] COM1 serial output and polling input path
-- [ ] Add robust keyboard layouts, shift/caps handling, and reliable line editing
-- [ ] Connect userspace input/read syscalls to a real terminal
-- [ ] Make NexShell an interactive shell instead of a print-and-yield stub
-- [x] Add basic VFS-backed `cat`, `touch`, `mkdir`, and `write` shell commands (in-memory only)
-- [ ] Add directory-aware `ls`, functional `cd`, and a broader set of file operations
-- [ ] Add init/service lifecycle and core utilities
+### D1 — First usable desktop
+- [ ] Boot reliably in BIOS and UEFI
+- [ ] Xfce desktop starts automatically
+- [ ] NetworkManager wired networking works
+- [ ] Wi-Fi firmware/package policy documented
+- [ ] Audio, Bluetooth and USB hardware smoke tests
+- [ ] Calamares installer completes a VM installation
+- [ ] First boot after installation succeeds
+- [ ] NexOS welcome/setup application
 
-## Phase 4 — Storage
-- [x] VFS API and in-memory filesystem prototype
-- [x] Block-device abstraction and ATA PIO prototype (not yet proven on hardware)
-- [x] Fixed-slot persistent filesystem with multi-sector metadata and bounded file reads/writes (not yet integrated into boot path or hardware-tested)
-- [ ] Add a real block-device driver and safe device discovery
-- [ ] Validate on-disk metadata, allocation, bounds, and crash consistency
-- [ ] Implement a complete, tested filesystem and persistent userspace storage
-- [ ] Add a storage test suite and recovery behavior
+### D2 — NexOS system layer
+- [ ] NexOS system CLI
+- [ ] Hardware diagnostics
+- [ ] Update/recovery utility
+- [ ] NexOS configuration package
+- [ ] First-party package repository
+- [ ] Signed package metadata
+- [ ] Release manifest and SBOM
 
-## Phase 5 — Wired networking
-- [x] PCI configuration-space discovery foundation
-- [x] Network-device abstraction and protocol-layer modules
-- [x] Ethernet/ARP/IPv4/UDP/TCP/DHCP/DNS/socket code foundations
-- [ ] Implement at least one supported NIC driver with real RX/TX
-- [ ] Correct VirtIO queue setup, physical DMA addresses, and memory barriers
-- [ ] Add packet-buffer ownership, timeouts, and malformed-packet tests
-- [ ] Integrate DHCP, DNS, and sockets with an active NIC
-- [ ] Validate end-to-end connectivity in QEMU
+### D3 — Security and reliability
+- [ ] Secure defaults
+- [ ] Automatic security update policy
+- [ ] AppArmor profile set
+- [ ] Firewall defaults
+- [ ] Recovery environment
+- [ ] Rollback/update recovery strategy
+- [ ] Reproducible image verification
 
-## Phase 6 — Wi-Fi, hotspot, and Bluetooth
-- [ ] Select and document specific supported Wi-Fi chipsets
-- [ ] Implement PCI/USB transport and firmware loading for selected Wi-Fi hardware
-- [ ] Implement 802.11 scanning, association, authentication, and key management
-- [ ] Add a Wi-Fi control service and network configuration interface
-- [ ] Implement AP mode, authentication, and DHCP/NAT before advertising hotspot support
-- [ ] Select supported Bluetooth controllers and implement HCI transport
-- [ ] Implement required Bluetooth protocols and device pairing
-- [ ] Test on physical hardware and document limitations
+### D4 — Product polish
+- [ ] Custom Plymouth/GRUB branding
+- [ ] NexOS desktop theme and icon set
+- [ ] First-run onboarding
+- [ ] Software center/package UX
+- [ ] Documentation site
+- [ ] Hardware compatibility matrix
 
-## Phase 7 — Graphics and input
-- [x] Framebuffer/windowing foundations
-- [x] Fixed-capacity window manager with stable IDs, z-order, focus, hit testing, move/resize, and close operations (host-side regression tests added; compositor not integrated)
-- [ ] Hardware-independent terminal rendering
-- [ ] USB HID keyboard/mouse support
-- [x] Host-testable desktop pointer routing: primary-click focus and title-bar dragging (requires a driver to feed mouse events; not wired into boot)
-- [x] Software compositor foundation that paints desktop background, window borders, and active/inactive title bars (host-side tests added; framebuffer and input integration still pending)
-- [x] Allocation-free bitmap graphics text console with clipped drawing and configurable colors (host-side tests added; boot shell integration still pending)
-- [ ] Window manager integration with live framebuffer and desktop shell
-- [ ] Settings and file manager
+### D5 — Advanced platform
+- [ ] ARM64 image
+- [ ] Optional NexOS kernel configuration
+- [ ] NexOS-specific low-level services where justified
+- [ ] Developer SDK
+- [ ] OEM/installer automation
 
-## Phase 8 — Distribution and release
-- [ ] A genuinely bootable ISO or clearly documented disk-image distribution
-- [ ] Release CI that fails on unsuccessful boot tests (not just QEMU timeout)
-- [ ] SHA-256 checksums and release notes
-- [ ] Hardware compatibility matrix and firmware/licensing notes
-- [ ] Installer, recovery environment, and upgrade strategy
-- [ ] End-to-end tests on QEMU and supported physical hardware
+## Research track
 
-## v0.2.0 release gate
-
-Do not describe Wi-Fi, hotspot, Bluetooth, persistent storage, multitasking, or desktop support as working until the corresponding end-to-end tests pass. The immediate release blockers are a green formatting/build pipeline, reliable BIOS/UEFI boot validation, and an interactive terminal/userspace path.
+The existing Rust kernel remains experimental until it has independently demonstrated safe userspace isolation, scheduling, persistent storage, networking and hardware support. It must not be presented as the kernel used by NexOS Linux.
