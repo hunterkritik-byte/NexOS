@@ -1,4 +1,6 @@
 # NexOS desktop/userland base
+plymouth
+plymouth-themes
 xfce4
 xfce4-goodies
 thunar
