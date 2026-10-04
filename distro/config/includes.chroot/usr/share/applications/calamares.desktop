@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Install NexOS
+GenericName=NexOS Installer
+Comment=Install NexOS Linux to your computer
+Exec=pkexec calamares
+Icon=system-software-install
+Terminal=false
+Categories=System;Settings;
+StartupNotify=true
