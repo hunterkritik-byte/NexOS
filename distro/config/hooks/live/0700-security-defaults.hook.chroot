@@ -1,0 +1,19 @@
+#!/bin/sh
+set -eu
+
+# Security defaults for a daily-use desktop. Enable services only when available.
+systemctl enable apparmor.service 2>/dev/null || true
+systemctl enable unattended-upgrades.service 2>/dev/null || true
+systemctl enable auditd.service 2>/dev/null || true
+
+# Enable the firewall without creating a blanket desktop lockout.
+if command -v ufw >/dev/null 2>&1; then
+  ufw --force default deny incoming
+  ufw --force default allow outgoing
+  ufw --force enable
+fi
+
+# Keep AppArmor enabled where the profile set exists.
+if command -v aa-enforce >/dev/null 2>&1; then
+  aa-enforce /etc/apparmor.d/* 2>/dev/null || true
+fi
