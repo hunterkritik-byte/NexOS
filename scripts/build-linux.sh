@@ -50,7 +50,7 @@ lb config \
   --debian-installer live \
   --debian-installer-gui true \
   --memtest none \
-  --security true \
+  --security false \
   --apt-recommends true \
   --linux-packages "linux-image linux-headers" \
   --bootappend-live "boot=live components username=nexos hostname=nexos console=ttyS0,115200"
