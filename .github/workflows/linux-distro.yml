@@ -19,7 +19,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-24.04
-    container: debian:13
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
