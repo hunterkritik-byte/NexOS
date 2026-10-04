@@ -8,7 +8,7 @@
 
 - **Boot:** BIOS and UEFI disk-image generation is provided by the image-builder. Test images in QEMU first.
 - **Kernel terminal:** a basic VGA text terminal accepts PS/2 keyboard input. COM1 serial output is initialized; the development shell also polls serial input.
-- **Shell:** basic commands include `help`, `clear`, `echo`, `uname`, `version`, `status`, `net`, `wifi`, `hotspot`, `bluetooth`, and `reboot`. Network status commands report unavailable hardware support honestly; they do not enable those services.
+- **Shell:** commands include `help`, `clear`, `echo`, `uname`, `version`, `status`, `pwd`, `ls`, `cat`, `touch`, `mkdir`, `write`, `net`, `wifi`, `hotspot`, `bluetooth`, and `reboot`. `cat`, `touch`, `mkdir`, and `write` use the experimental in-memory VFS; their files disappear on reboot. `ls` currently shows the root namespace only. Network status commands report unavailable hardware support honestly; they do not enable those services.
 - **Memory/processes:** boot memory-map access, frame allocation, page-table helpers, ELF inspection/loading, and syscall/process foundations exist. Do not assume full isolation or general-purpose multitasking.
 - **Storage:** an in-memory VFS and experimental block/persistent-filesystem code exist. A complete, tested disk-backed filesystem and user-facing file commands are not yet available.
 - **Networking:** PCI network-controller discovery and protocol-layer foundations exist. The current VirtIO network driver deliberately refuses to enable DMA until correct physical-address mapping and queue programming are implemented. No usable NIC is currently brought online by the boot path.
@@ -16,7 +16,7 @@
 - **Bluetooth:** not implemented. It needs a supported controller transport/driver and HCI plus higher-level Bluetooth protocols.
 - **Graphics:** framebuffer and windowing foundations exist; this is not yet a complete desktop environment.
 
-See [docs/ROADMAP.md](docs/ROADMAP.md) for the tracked status and [docs/NETWORKING.md](docs/NETWORKING.md) for the Wi-Fi, hotspot, Bluetooth, and Ethernet plan.
+See [docs/ROADMAP.md](docs/ROADMAP.md) for tracked status, [docs/SHELL.md](docs/SHELL.md) for shell limits, [docs/PERSISTENT-FS.md](docs/PERSISTENT-FS.md) for the experimental disk format and safe mount/format rules, [docs/NETWORKING.md](docs/NETWORKING.md) for network plans, and [docs/OS-READINESS.md](docs/OS-READINESS.md) for the staged path toward a general-purpose OS.
 
 ## Architecture
 
