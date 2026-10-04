@@ -1,5 +1,6 @@
 #![cfg_attr(target_os = "none", no_std)]
 #![cfg_attr(target_os = "none", no_main)]
+#![cfg_attr(target_os = "none", feature(abi_x86_interrupt))]
 
 #[cfg(target_os = "none")]
 mod arch;
@@ -19,7 +20,6 @@ mod x86_kernel {
     mod terminal;
     #[path = "../graphics/mod.rs"]
     mod graphics;
-    pub use graphics::window;
 
     const VGA_BUFFER: usize = 0xb8000;
     const VGA_WIDTH: usize = 80;
