@@ -1,0 +1,38 @@
+#!/bin/sh
+set -eu
+cmd="${1:-help}"
+case "$cmd" in
+  help)
+    cat <<'EOF'
+NexOS Recovery Tools
+  status       Show failed services and filesystem mounts
+  journal      Show current-boot errors
+  network      Show NetworkManager status
+  repair       Repair package configuration and refresh initramfs
+  reboot       Reboot the system
+EOF
+    ;;
+  status)
+    systemctl --failed --no-legend || true
+    findmnt || true
+    ;;
+  journal)
+    journalctl -b -p err --no-pager || true
+    ;;
+  network)
+    nmcli general status || true
+    nmcli device status || true
+    ;;
+  repair)
+    [ "$(id -u)" -eq 0 ] || { echo "Run: sudo nexos-recovery repair" >&2; exit 1; }
+    dpkg --configure -a
+    apt-get -f install -y
+    update-initramfs -u -k all
+    systemctl daemon-reload
+    echo "NexOS repair completed."
+    ;;
+  reboot)
+    systemctl reboot
+    ;;
+  *) echo "Unknown command: $cmd"; exit 2 ;;
+esac
