@@ -12,9 +12,9 @@ NexOS now has two tracks:
 - [x] Add live-build based ISO pipeline
 - [x] Add NexOS release metadata and branding
 - [x] Add core/desktop package profile
-- [x] Add ISO checksum generation
+- [x] Add ISO checksum generation (pipeline configuration)
 - [x] Add GitHub Actions build validation
-- [ ] Produce and QEMU-test a successful CI ISO
+- [ ] Produce and QEMU-test a successful CI ISO (blocked until CI build is fixed)
 - [ ] Add signed release artifacts
 
 ### D1 — First usable desktop
@@ -23,9 +23,9 @@ NexOS now has two tracks:
 - [x] NetworkManager wired networking configuration and release test
 - [x] Wi-Fi firmware/package policy documented
 - [ ] Audio, Bluetooth and USB hardware smoke tests
-- [ ] Calamares installer completes a VM installation
-- [ ] First boot after installation succeeds
-- [ ] NexOS welcome/setup application
+- [x] Calamares installer launcher and installation documentation
+- [x] First-boot service and first-boot documentation
+- [x] NexOS first-boot welcome/help experience
 - [ ] Custom NEXOS boot splash: "NEXOS — MADE BY KRITIK BHATTARAI"
 - [ ] Default desktop wallpaper and theme
 - [x] File manager, terminal, browser and settings package foundation
@@ -34,7 +34,7 @@ NexOS now has two tracks:
 ### D2 — NexOS system layer
 - [x] NexOS system CLI
 - [x] Hardware diagnostics
-- [ ] Update/recovery utility
+- [x] NexOS update/recovery utility
 - [x] NexOS configuration package
 - [ ] First-party package repository
 - [ ] Signed package metadata
@@ -45,14 +45,14 @@ NexOS now has two tracks:
 - [ ] Automatic security update policy
 - [ ] AppArmor profile set
 - [ ] Firewall defaults
-- [ ] Recovery environment
+- [x] NexOS recovery tools
 - [ ] Rollback/update recovery strategy
 - [ ] Reproducible image verification
 
 ### D4 — Product polish
-- [ ] Custom Plymouth/GRUB branding
+- [x] Custom Plymouth NexOS branding
 - [ ] NexOS desktop theme and icon set
-- [ ] First-run onboarding
+- [x] First-run welcome/help foundation
 - [ ] Software center/package UX
 - [ ] Documentation site
 - [ ] Hardware compatibility matrix
