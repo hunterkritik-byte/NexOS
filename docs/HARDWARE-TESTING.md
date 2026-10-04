@@ -49,3 +49,17 @@ sudo /usr/share/nexos/hardware-check.sh
 ```
 
 Hardware results depend on the target machine and available Linux firmware/drivers. A missing physical device is not treated as an image-build failure.
+
+
+## Extended CI hardware validation
+
+The `.github/workflows/hardware-extended.yml` workflow checks the Linux interfaces used by Wi-Fi, Bluetooth, audio and USB.
+
+A GitHub-hosted runner cannot honestly pass these physical tests:
+- Bluetooth pairing with a real device
+- Speaker playback through a physical sound device
+- Microphone capture from a physical microphone
+- USB physical hotplug/insertion
+- Wi-Fi association using a physical adapter
+
+Those require a NexOS x86_64 machine with the hardware attached, preferably as a self-hosted GitHub Actions runner or a manual ISO test machine.
