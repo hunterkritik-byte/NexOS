@@ -1,0 +1,53 @@
+#!/bin/sh
+set -eu
+
+# NexOS hardware services. Enable when present; do not make absent optional
+# hardware fatal during image construction.
+for unit in NetworkManager.service bluetooth.service; do
+  if command -v systemctl >/dev/null 2>&1; then
+    systemctl enable "$unit" 2>/dev/null || true
+  fi
+done
+
+# Ensure the desktop has the NetworkManager and Bluetooth user tools.
+command -v nmcli >/dev/null 2>&1 || echo "WARNING: nmcli is missing"
+command -v bluetoothctl >/dev/null 2>&1 || echo "WARNING: bluetoothctl is missing"
+command -v wpctl >/dev/null 2>&1 || echo "WARNING: wpctl is missing"
+
+# Storage management for removable disks.
+if command -v udevadm >/dev/null 2>&1; then
+  udevadm control --reload 2>/dev/null || true
+fi
+
+mkdir -p /usr/share/nexos
+cat > /usr/share/nexos/hardware-check.sh <<'EOF'
+#!/bin/sh
+printf '%s\n' '=== NexOS Hardware Check ==='
+printf 'Kernel: '; uname -r
+printf 'Architecture: '; uname -m
+
+echo '--- Network'
+if command -v nmcli >/dev/null 2>&1; then
+  nmcli general status || true
+  nmcli device status || true
+fi
+
+echo '--- Bluetooth'
+if command -v bluetoothctl >/dev/null 2>&1; then
+  bluetoothctl show || true
+fi
+
+echo '--- Audio'
+if command -v wpctl >/dev/null 2>&1; then
+  wpctl status || true
+fi
+
+echo '--- Storage'
+if command -v lsblk >/dev/null 2>&1; then
+  lsblk -o NAME,SIZE,TYPE,FSTYPE,MOUNTPOINTS || true
+fi
+
+echo '--- Failed services'
+systemctl --failed --no-legend 2>/dev/null || true
+EOF
+chmod 0755 /usr/share/nexos/hardware-check.sh
