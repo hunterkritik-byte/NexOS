@@ -31,7 +31,7 @@ impl InputQueue {
     }
 }
 
-use crate::window::{Rect, WindowManager};
+use super::window::{Rect, WindowManager};
 
 /// Routes queued pointer events to the window manager.
 ///
