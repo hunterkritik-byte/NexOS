@@ -90,3 +90,10 @@ firmware-mediatek
 build-essential
 pkg-config
 linux-headers-amd64
+
+udisks2
+udisks2-btrfs
+policykit-1
+desktop-base
+xdg-utils
+xorg
