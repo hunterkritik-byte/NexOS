@@ -1,3 +1,45 @@
+# NexOS desktop/userland base
+xfce4
+xfce4-goodies
+thunar
+thunar-archive-plugin
+thunar-volman
+gvfs
+gvfs-backends
+file-roller
+mousepad
+ristretto
+xfce4-terminal
+xfce4-notifyd
+xfce4-power-manager
+lightdm
+lightdm-gtk-greeter
+network-manager
+network-manager-gnome
+network-manager-openvpn
+network-manager-pptp
+network-manager-vpnc
+bluez
+blueman
+pulseaudio
+pavucontrol
+pipewire
+pipewire-audio
+pipewire-pulse
+wireplumber
+alsa-utils
+alsa-ucm-conf
+ffmpeg
+cups
+cups-client
+system-config-printer
+fonts-dejavu
+fonts-noto
+fonts-noto-cjk
+
+# Browser and base system
+firefox-esr
+
 # Base system
 sudo
 systemd
