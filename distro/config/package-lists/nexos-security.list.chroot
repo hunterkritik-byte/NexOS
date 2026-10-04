@@ -1,0 +1,24 @@
+# NexOS authorized security / bug-hunting toolkit
+# These are normal Debian packages; users are responsible for authorized use.
+nmap
+wireshark
+tshark
+tcpdump
+netcat-openbsd
+dnsutils
+whois
+curl
+wget
+git
+python3
+python3-pip
+python3-venv
+jq
+ripgrep
+gdb
+binutils
+strace
+ltrace
+ghex
+nikto
+sqlmap
