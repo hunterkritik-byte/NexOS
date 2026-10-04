@@ -54,13 +54,18 @@ lb config \
 
 # live-build 3.x on Ubuntu does not accept the newer security-mirror flags.
 # Normalize its generated Trixie security suite before the build starts.
-while IFS= read -r -d "" file; do
+# live-build can materialize the security source in generated config files
+# after "lb config", so normalize every generated text file before bootstrap.
+find "$BUILD_DIR/config" -type f -print0 | while IFS= read -r -d "" file; do
   sed -i \
     -e "s#security.debian.org/debian-security#deb.debian.org/debian-security#g" \
     -e "s#security.debian.org#deb.debian.org/debian-security#g" \
     -e "s#trixie/updates#trixie-security#g" \
     "$file"
-done < <(grep -RIlZ -E "security\\.debian\\.org|trixie/updates" config || true)
+done
+
+# Never reuse a bootstrap cache containing an obsolete Trixie security suite.
+rm -rf "$BUILD_DIR/cache" "$BUILD_DIR/.build" "$BUILD_DIR/.stage"
 
 lb build 2>&1 | tee "$ROOT_DIR/build/nexos-live-build.log"
 
