@@ -1,0 +1,36 @@
+#!/bin/sh
+set -eu
+cmd="${1:-help}"
+case "$cmd" in
+  help)
+    echo "NexOS CLI"
+    echo "  info       Show NexOS system information"
+    echo "  update     Refresh package indexes and upgrades"
+    echo "  network    Show NetworkManager status"
+    echo "  bluetooth  Show Bluetooth status"
+    echo "  audio      Show PipeWire/WirePlumber status"
+    echo "  doctor     Run basic system diagnostics"
+    ;;
+  info)
+    cat /etc/os-release
+    echo "Kernel: $(uname -srmo)"
+    echo "Architecture: $(uname -m)"
+    ;;
+  update)
+    sudo apt-get update
+    sudo apt-get upgrade -y
+    ;;
+  network) nmcli general status; nmcli device status ;;
+  bluetooth) systemctl --no-pager status bluetooth || true; bluetoothctl show || true ;;
+  audio) systemctl --user --no-pager status pipewire wireplumber pipewire-pulse || true; wpctl status || true ;;
+  doctor)
+    echo "=== NexOS Doctor ==="
+    printf "Kernel: "; uname -r
+    printf "Disk: "; df -h / | tail -1
+    printf "Memory: "; free -h | awk '/Mem:/{print $3 " used / " $2}'
+    echo "--- Network"; nmcli general status || true
+    echo "--- Bluetooth"; systemctl is-active bluetooth || true
+    echo "--- Audio"; systemctl --user is-active pipewire wireplumber || true
+    ;;
+  *) echo "Unknown command: $cmd (try: nexos help)" >&2; exit 2 ;;
+esac
