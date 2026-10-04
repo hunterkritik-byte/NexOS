@@ -1,21 +1,29 @@
-//! Minimal x86 network hardware module used during kernel bring-up.
-//!
-//! This module intentionally provides only the platform-facing types needed
-//! by the kernel. User-space networking is provided by the Linux NexOS image.
+pub mod device {
+    use crate::x86_kernel::drivers::{NetworkKind, PciDevice};
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct NetworkDevice {
-    pub bus: u8,
-    pub slot: u8,
-    pub function: u8,
-}
+    #[derive(Clone, Copy)]
+    pub struct RegisteredPci { pub pci: PciDevice }
 
-impl NetworkDevice {
-    pub const fn new(bus: u8, slot: u8, function: u8) -> Self {
-        Self { bus, slot, function }
+    pub struct NetworkRegistry {
+        devices: [Option<RegisteredPci>; 8],
+        count: usize,
     }
-}
 
-pub const fn probe() -> Option<NetworkDevice> {
-    None
+    impl NetworkRegistry {
+        pub const fn new() -> Self { Self { devices: [None; 8], count: 0 } }
+
+        pub fn register_pci(&mut self, pci: PciDevice) {
+            if self.count < self.devices.len() {
+                self.devices[self.count] = Some(RegisteredPci { pci });
+                self.count += 1;
+            }
+        }
+
+        pub fn len(&self) -> usize { self.count }
+
+        pub fn describe(&self, index: usize) -> Option<(&'static str, NetworkKind, PciDevice)> {
+            let entry = self.devices.get(index)?.as_ref()?;
+            Some(("pci-probe", crate::x86_kernel::drivers::network::classify(entry.pci), entry.pci))
+        }
+    }
 }
