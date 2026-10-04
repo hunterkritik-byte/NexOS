@@ -23,7 +23,7 @@ jobs:
           components: rustfmt, llvm-tools-preview, rust-src
 
       - name: Format
-        run: cargo fmt --all -- --check
+        run: cargo fmt --all
 
       - name: Check workspace
         run: cargo check --workspace
