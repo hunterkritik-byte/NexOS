@@ -1,0 +1,6 @@
+#!/bin/sh
+set -eu
+mkdir -p /usr/share/backgrounds /usr/share/plymouth/themes/nexos
+if command -v plymouth-set-default-theme >/dev/null 2>&1; then
+  plymouth-set-default-theme nexos 2>/dev/null || true
+fi
