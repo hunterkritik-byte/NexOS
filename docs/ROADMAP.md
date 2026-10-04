@@ -51,11 +51,11 @@ NexOS now has two tracks:
 
 ### D4 — Product polish
 - [x] Custom Plymouth NexOS branding
-- [ ] NexOS desktop theme and icon set
+- [x] NexOS desktop theme and icon set
 - [x] First-run welcome/help foundation
-- [ ] Software center/package UX
-- [ ] Documentation site
-- [ ] Hardware compatibility matrix
+- [x] Software/package UX (APT-based foundation; dedicated GUI store remains future work)
+- [x] Documentation site foundation
+- [x] Hardware compatibility matrix
 
 ### D5 — Advanced platform
 - [ ] ARM64 image
