@@ -18,12 +18,13 @@ pub struct GlobalTables {
     pub user_code: SegmentSelector,
     pub user_data: SegmentSelector,
     pub tss_selector: SegmentSelector,
-    pub tss: TaskStateSegment,
+    pub tss: &'static TaskStateSegment,
 }
 
 impl GlobalTables {
-    pub fn new(kernel_stack_top: u64) -> Self {
-        let mut tss = TaskStateSegment::new();
+    pub unsafe fn new(kernel_stack_top: u64) -> Self {
+        TSS_STORAGE.write(TaskStateSegment::new());
+        let tss = &mut *TSS_STORAGE.as_mut_ptr();
         tss.privilege_stack_table[0] = VirtAddr::new(kernel_stack_top);
 
         let mut gdt = GlobalDescriptorTable::new();
@@ -33,7 +34,7 @@ impl GlobalTables {
         let user_data = gdt.append(Descriptor::user_data_segment());
         let tss_selector = gdt.append(Descriptor::tss_segment(&tss));
 
-        Self { gdt, code, data, user_code, user_data, tss_selector, tss }
+        Self { gdt, code, data, user_code, user_data, tss_selector, tss: &*tss }
     }
 
     pub unsafe fn init(&'static self) {
