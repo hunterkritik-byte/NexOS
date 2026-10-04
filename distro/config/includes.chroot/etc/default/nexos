@@ -1,0 +1,4 @@
+NEXOS_NAME="NexOS Linux"
+NEXOS_EDITION="Desktop"
+NEXOS_ARCH="x86_64"
+NEXOS_MAINTAINER="Kritik Bhattarai"
