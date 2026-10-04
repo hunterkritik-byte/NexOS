@@ -1,0 +1,25 @@
+#!/bin/sh
+set -eu
+case "${1:-help}" in
+  help)
+    echo "nexos-maintenance: updates | security | disk | status"
+    ;;
+  updates)
+    sudo apt update
+    apt list --upgradable 2>/dev/null || true
+    ;;
+  security)
+    sudo unattended-upgrade --dry-run || true
+    sudo aa-status || true
+    sudo ufw status verbose || true
+    ;;
+  disk)
+    df -h
+    lsblk -o NAME,SIZE,FSTYPE,MOUNTPOINTS
+    ;;
+  status)
+    systemctl --failed --no-legend || true
+    systemctl is-active NetworkManager lightdm bluetooth 2>/dev/null || true
+    ;;
+  *) echo "Usage: nexos-maintenance {updates|security|disk|status|help}"; exit 2 ;;
+esac
