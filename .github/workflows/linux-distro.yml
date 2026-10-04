@@ -1,0 +1,47 @@
+name: NexOS Linux
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "distro/**"
+      - "scripts/build-linux.sh"
+      - "scripts/smoke-test.sh"
+      - ".github/workflows/linux-distro.yml"
+  pull_request:
+    paths:
+      - "distro/**"
+      - "scripts/build-linux.sh"
+      - "scripts/smoke-test.sh"
+      - ".github/workflows/linux-distro.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y live-build debootstrap qemu-system-x86 xorriso squashfs-tools grub-pc-bin grub-efi-amd64-bin ovmf
+
+      - name: Build NexOS Linux ISO
+        run: sudo ./scripts/build-linux.sh
+
+      - name: Validate ISO metadata
+        run: |
+          test -s dist/NexOS-Linux-amd64.iso
+          sha256sum -c dist/NexOS-Linux-amd64.iso.sha256
+          file dist/NexOS-Linux-amd64.iso
+          xorriso -indev dist/NexOS-Linux-amd64.iso -report_el_torito as_mkisofs
+
+      - name: Upload ISO
+        uses: actions/upload-artifact@v4
+        with:
+          name: NexOS-Linux-amd64
+          path: |
+            dist/NexOS-Linux-amd64.iso
+            dist/NexOS-Linux-amd64.iso.sha256
