@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BUILD_DIR="$ROOT_DIR/build/live"
+CACHE_DIR="$ROOT_DIR/build/cache"
 DIST_DIR="$ROOT_DIR/dist"
 PROFILE_DIR="$ROOT_DIR/distro/config"
 NO_DESKTOP=0
@@ -26,18 +27,22 @@ fi
 command -v lb >/dev/null || { echo "live-build is required"; exit 1; }
 command -v xorriso >/dev/null || { echo "xorriso is required"; exit 1; }
 
-mkdir -p "$DIST_DIR"
+mkdir -p "$DIST_DIR" "$CACHE_DIR"
 rm -rf "$BUILD_DIR"
 mkdir -p "$BUILD_DIR"
 cp -a "$PROFILE_DIR/." "$BUILD_DIR/"
 
 cd "$BUILD_DIR"
 
+# Start from a clean live-build configuration so stale settings cannot leak.
+rm -rf config/chroot_local-includes config/includes.binary
+mkdir -p config/chroot_local-includes
+
 if [[ "$NO_DESKTOP" -eq 1 ]]; then
   sed -i '/^task-xfce-desktop$/d;/^lightdm$/d;/^lightdm-gtk-greeter$/d;/^xfce4-terminal$/d;/^thunar$/d;/^firefox-esr$/d' config/package-lists/nexos.list.chroot
 fi
 
-lb config   --distribution trixie   --architectures amd64   --binary-images iso-hybrid   --archive-areas "main contrib non-free non-free-firmware"   --debian-installer live   --debian-installer-gui true   --memtest none   --apt-recommends true   --linux-packages "linux-image linux-headers"   --bootappend-live "boot=live components username=nexos hostname=nexos"
+lb config   --distribution trixie   --architectures amd64   --binary-images iso-hybrid   --archive-areas "main contrib non-free non-free-firmware"   --debian-installer live   --debian-installer-gui true   --memtest none   --apt-recommends true   --linux-packages "linux-image linux-headers"   --bootappend-live "boot=live components username=nexos hostname=nexos console=ttyS0,115200"
 
 lb build 2>&1 | tee "$ROOT_DIR/build/nexos-live-build.log"
 
