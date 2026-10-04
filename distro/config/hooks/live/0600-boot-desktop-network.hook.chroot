@@ -1,0 +1,12 @@
+#!/bin/sh
+set -eu
+
+# Enable the graphical login and desktop session in the installed/live image.
+systemctl enable lightdm.service 2>/dev/null || true
+systemctl enable NetworkManager.service 2>/dev/null || true
+
+# Avoid stale NetworkManager state from image construction.
+rm -f /var/lib/NetworkManager/NetworkManager-intern.conf 2>/dev/null || true
+
+# Keep firmware discoverable through the standard Debian firmware directories.
+mkdir -p /lib/firmware
