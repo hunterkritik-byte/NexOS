@@ -1,0 +1,7 @@
+#!/bin/sh
+set -eu
+chmod 0644 /usr/share/applications/calamares.desktop
+if command -v calamares >/dev/null 2>&1; then
+  # Keep the installer launcher only when the installer is present.
+  test -x "$(command -v calamares)"
+fi
