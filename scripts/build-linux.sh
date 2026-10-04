@@ -51,6 +51,8 @@ lb config \
   --debian-installer-gui true \
   --memtest none \
   --security false \
+  --apt-indices false \
+  --apt-source-archives false \
   --apt-recommends true \
   --linux-packages "linux-image linux-headers" \
   --bootappend-live "boot=live components username=nexos hostname=nexos console=ttyS0,115200"
