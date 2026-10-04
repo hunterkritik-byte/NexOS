@@ -172,7 +172,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
-            live-build debootstrap xorriso squashfs-tools \
+            live-build debootstrap xorriso squashfs-tools isolinux syslinux-common \
             grub-pc-bin grub-efi-amd64-bin ovmf \
             dosfstools mtools ca-certificates
 
