@@ -23,8 +23,6 @@ network-manager-pptp
 network-manager-vpnc
 bluez
 blueman
-pulseaudio
-pavucontrol
 pipewire
 pipewire-audio
 pipewire-pulse
@@ -41,8 +39,6 @@ fonts-noto-cjk
 
 # Browser and base system
 firefox-esr
-
-# Base system
 sudo
 systemd
 systemd-sysv
@@ -63,15 +59,6 @@ htop
 openssh-client
 rsync
 
-# Desktop
-task-xfce-desktop
-lightdm
-lightdm-gtk-greeter
-xfce4-terminal
-thunar
-network-manager-gnome
-firefox-esr
-
 # Installer / live support
 calamares
 calamares-settings-debian
@@ -86,28 +73,24 @@ firmware-atheros
 firmware-brcm80211
 firmware-mediatek
 
-# NexOS developer/system tools
+# NexOS system/security
 build-essential
 pkg-config
 linux-headers-amd64
-
 udisks2
 udisks2-btrfs
 policykit-1
 desktop-base
 xdg-utils
 xorg
-
 wpasupplicant
 wireless-tools
 pulseaudio-utils
-
 xfce4-settings
 apt
 procps
 util-linux
 dmidecode
-
 linux-image-amd64
 grub-pc
 grub-efi-amd64
@@ -117,3 +100,12 @@ efibootmgr
 isc-dhcp-client
 iproute2
 firmware-linux-nonfree
+
+# Daily-use security and maintenance
+apparmor
+apparmor-utils
+auditd
+ufw
+unattended-upgrades
+apt-listchanges
+needrestart
