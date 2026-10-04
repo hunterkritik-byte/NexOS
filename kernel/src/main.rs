@@ -301,15 +301,18 @@ mod x86_kernel {
     fn boot_splash(term: &mut Terminal) {
         term.clear();
         term.write_str("\n");
-        term.write_str("                 _   _ _______  __  __  ____  _____\n");
-        term.write_str("                | \ | | ____\ \/ / |  \/  |/ __ \/ ___/\n");
-        term.write_str("                |  \| |  _|  \  /  | |\/| | |  | \__ \n");
-        term.write_str("                | |\  | |___ /  \\  | |  | | |__| |__/ /\n");
-        term.write_str("                |_| \_|_____/_/\\_\\ |_|  |_|\\____/____/\n");
+        term.write_str(r"                 _   _ _______  __  __  ____  _____");
         term.write_str("\n");
+        term.write_str(r"                | \\ | | ____\\ \\/ / |  \\/  |/ __ \\/ ___/");
+        term.write_str("\n");
+        term.write_str(r"                |  \\| |  _|  \\  /  | |\\/| | |  | \\__ \\");
+        term.write_str("\n");
+        term.write_str(r"                | |\\  | |___ /  \\  | |  | | |__| |__/ /");
+        term.write_str("\n");
+        term.write_str(r"                |_| \\_|_____/_/\\_\\ |_|  |_|\\____/____/");
+        term.write_str("\n\n");
         term.write_str("                         NEXOS\n");
-        term.write_str("                    MADE BY KRITIK\n");
-        term.write_str("\n");
+        term.write_str("                    MADE BY KRITIK BHATTARAI\n\n");
         term.write_str("                         Loading");
         for _ in 0..3 {
             for _ in 0..30_000_000 {
