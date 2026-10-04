@@ -1,0 +1,27 @@
+#!/bin/sh
+set -eu
+STATE=/var/lib/nexos/firstboot-complete
+[ -e "$STATE" ] && exit 0
+
+mkdir -p /var/lib/nexos
+cat > /usr/share/nexos-firstboot.txt <<'EOF'
+Welcome to NexOS Linux
+
+NEXOS — MADE BY KRITIK BHATTARAI
+
+Your system is ready.
+
+Useful commands:
+  nexos info
+  nexos doctor
+  nexos-system help
+  nexos-recovery help
+
+Graphical applications:
+  NexOS Settings
+  NexOS System Tools
+  Firefox ESR
+  Thunar File Manager
+EOF
+
+touch "$STATE"
