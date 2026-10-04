@@ -19,7 +19,7 @@ mod x86_kernel {
     // Existing graphics modules use the crate-level window path.
     pub use graphics::window;
     mod arch {
-        #[path = "../arch/x86_64/mod.rs"]
+        #[path = "../../arch/x86_64/mod.rs"]
         pub mod x86_64;
     }
 
