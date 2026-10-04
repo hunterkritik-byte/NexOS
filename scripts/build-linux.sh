@@ -47,9 +47,8 @@ lb config \
   --mirror-binary-security "http://deb.debian.org/debian-security/" \
   --mirror-chroot "http://deb.debian.org/debian/" \
   --mirror-chroot-security "http://deb.debian.org/debian-security/" \
-  --debian-installer live \
+  --debian-installer false \
   --initsystem systemd \
-  --debian-installer-gui true \
   --memtest none \
   --security false \
   --apt-indices false \
