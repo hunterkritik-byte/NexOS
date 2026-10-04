@@ -45,6 +45,9 @@ lb config \
   --mirror-bootstrap "http://deb.debian.org/debian/" \
   --mirror-binary "http://deb.debian.org/debian/" \
   --mirror-chroot "http://deb.debian.org/debian/" \
+  --mirror-bootstrap-security "http://deb.debian.org/debian-security/" \
+  --mirror-chroot-security "http://deb.debian.org/debian-security/" \
+  --mirror-binary-security "http://deb.debian.org/debian-security/" \
   --debian-installer live \
   --debian-installer-gui true \
   --memtest none \
