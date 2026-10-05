@@ -31,7 +31,7 @@ If you want to support NexOS development, sponsor hardware/testing, or collabora
 NexOS v0.2.0 is the first full NexOS Desktop ISO, targeting **x86_64/amd64** hardware.
 
 <p align="center">
-  <a href="https://github.com/hunterkritik-byte/NexOS/releases">
+  <a href="https://github.com/hunterkritik-byte/NexOS/actions/runs/37272489178/artifacts/11328792769">
     <img src="https://img.shields.io/badge/%E2%AC%87%20Download-NexOS%20v0.2.0-blue?style=for-the-badge" alt="Download NexOS v0.2.0">
   </a>
 </p>
