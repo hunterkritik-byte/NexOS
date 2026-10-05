@@ -59,7 +59,7 @@ fi
 
 # Do not manufacture /root/isolinux links. live-build owns bootloader staging.
 lb config   --mode debian   --distribution trixie   --architectures amd64   --binary-images iso-hybrid   --bootloaders "syslinux grub-efi"   --archive-areas "main contrib non-free non-free-firmware"   --mirror-bootstrap "http://deb.debian.org/debian/"   --mirror-binary "http://deb.debian.org/debian/"   --mirror-chroot "http://deb.debian.org/debian/"   --debian-installer none   --initsystem systemd   --memtest none   --apt-indices false   --apt-source-archives false   --apt-recommends true \
-  --security false   --linux-packages "linux-image-amd64"   --bootappend-live "boot=live components username=nexos hostname=nexos"
+  --security false   --linux-packages "linux-image"   --bootappend-live "boot=live components username=nexos hostname=nexos"
 
 lb build 2>&1 | tee "$ROOT_DIR/build/nexos-live-build.log"
 
