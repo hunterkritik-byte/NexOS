@@ -1,7 +1,7 @@
 # NexOS desktop/userland base
 task-xfce-desktop
 task-laptop
-task-printing
+
 xfce4-session
 xfce4-panel
 xfdesktop4
@@ -85,7 +85,8 @@ pkg-config
 linux-headers-amd64
 udisks2
 udisks2-btrfs
-policykit-1
+polkitd
+pkexec
 desktop-base
 xdg-utils
 xorg
@@ -156,7 +157,7 @@ seahorse
 gnome-keyring
 libsecret-1-0
 timeshift
-ntp
+ntpsec
 systemd-timesyncd
 printer-driver-all
 simple-scan
@@ -185,7 +186,7 @@ brightnessctl
 acpi
 lm-sensors
 inxi
-neofetch
+fastfetch
 tree
 tmux
 screen
