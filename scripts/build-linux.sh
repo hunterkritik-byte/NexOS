@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BUILD_DIR="$ROOT_DIR/build/live"
 CACHE_DIR="$ROOT_DIR/build/cache"
-DIST_DIR="$ROOT_DIR/dist"
+DIST_DIR="$ROOT_DIR/distro/dist"
 PROFILE_DIR="$ROOT_DIR/distro/config"
 NO_DESKTOP=0
 
