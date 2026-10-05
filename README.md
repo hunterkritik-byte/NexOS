@@ -38,7 +38,9 @@ NexOS v0.2.0 is the first full NexOS Desktop ISO, targeting **x86_64/amd64** har
 
 **ISO size:** approximately **2.54 GB**
 
-**Download:** [NexOS Releases](https://github.com/hunterkritik-byte/NexOS/releases)
+**Download:** [⬇️ Download NexOS Desktop x64 (2.54 GB)](https://github.com/hunterkritik-byte/NexOS/actions/runs/37272489178/artifacts/11328792769)  
+
+[View NexOS Releases](https://github.com/hunterkritik-byte/NexOS/releases)
 
 > The v0.1.0 release is the earlier 4.5 MB kernel/development image. **v0.2.0 is the first full desktop distribution ISO.**
 
