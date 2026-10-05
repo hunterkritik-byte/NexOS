@@ -174,7 +174,14 @@ jobs:
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
             live-build debootstrap xorriso squashfs-tools isolinux syslinux-common \
             grub-pc-bin grub-efi-amd64-bin ovmf \
-            dosfstools mtools ca-certificates
+            dosfstools mtools ca-certificates wget
+
+      - name: Install Debian Trixie live-build and stage ISOLINUX assets
+        run: |
+          curl -fsSL -o /tmp/live-build.deb https://deb.debian.org/debian/pool/main/l/live-build/live-build_20250505+deb13u1_all.deb
+          sudo dpkg -i /tmp/live-build.deb
+          lb --version
+          rm -f /tmp/live-build.deb
 
       - name: Stage ISOLINUX assets before chroot package installation
         run: |
