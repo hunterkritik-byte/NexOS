@@ -171,10 +171,12 @@ jobs:
       - name: Install live-build and ISO dependencies
         run: |
           sudo apt-get update
+          sudo apt-get install -y debian-archive-keyring ca-certificates
+          test -s /usr/share/keyrings/debian-archive-keyring.gpg
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
             live-build debootstrap xorriso squashfs-tools isolinux syslinux-common \
             grub-pc-bin grub-efi-amd64-bin ovmf \
-            dosfstools mtools ca-certificates wget
+            dosfstools mtools ca-certificates wget debian-archive-keyring
 
       - name: Install Debian Trixie live-build and stage ISOLINUX assets
         run: |
