@@ -176,6 +176,17 @@ jobs:
             grub-pc-bin grub-efi-amd64-bin ovmf \
             dosfstools mtools ca-certificates
 
+      - name: Stage ISOLINUX assets before chroot package installation
+        run: |
+          sudo rm -rf distro/config/includes.chroot_before_packages
+          sudo mkdir -p distro/config/includes.chroot_before_packages/root/isolinux
+          sudo cp /usr/lib/ISOLINUX/isolinux.bin distro/config/includes.chroot_before_packages/root/isolinux/isolinux.bin
+          sudo cp /usr/lib/syslinux/modules/bios/vesamenu.c32 distro/config/includes.chroot_before_packages/root/isolinux/vesamenu.c32
+          sudo cp /usr/lib/syslinux/modules/bios/ldlinux.c32 distro/config/includes.chroot_before_packages/root/isolinux/ldlinux.c32
+          sudo cp /usr/lib/syslinux/modules/bios/libcom32.c32 distro/config/includes.chroot_before_packages/root/isolinux/libcom32.c32
+          sudo cp /usr/lib/syslinux/modules/bios/libutil.c32 distro/config/includes.chroot_before_packages/root/isolinux/libutil.c32
+          sudo chown -R "$(id -u):$(id -g)" distro/config/includes.chroot_before_packages
+
       - name: Build full NexOS Desktop ISO
         run: |
           chmod +x scripts/build-linux.sh
