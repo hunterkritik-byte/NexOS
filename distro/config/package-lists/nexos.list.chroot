@@ -99,7 +99,7 @@ procps
 util-linux
 dmidecode
 linux-image-amd64
-grub-pc
+
 grub-efi-amd64
 grub-efi-amd64-signed
 shim-signed
@@ -157,7 +157,7 @@ seahorse
 gnome-keyring
 libsecret-1-0
 timeshift
-ntpsec
+
 systemd-timesyncd
 printer-driver-all
 simple-scan
