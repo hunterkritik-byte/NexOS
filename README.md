@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/hunterkritik-byte/NexOS/releases"><img src="https://img.shields.io/github/v/release/hunterkritik-byte/NexOS?display_name=tag&sort=semver" alt="Latest release"></a>
+  <a href="https://github.com/hunterkritik-byte/NexOS/actions/runs/37272489178/artifacts/11328792769"><img src="https://img.shields.io/github/v/release/hunterkritik-byte/NexOS?display_name=tag&sort=semver" alt="Latest release"></a>
   <a href="https://github.com/hunterkritik-byte/NexOS/actions"><img src="https://img.shields.io/github/actions/workflow/status/hunterkritik-byte/NexOS/iso.yml?label=ISO%20build" alt="ISO build"></a>
   <a href="https://github.com/hunterkritik-byte/NexOS/blob/main/LICENSE"><img src="https://img.shields.io/github/license/hunterkritik-byte/NexOS" alt="License"></a>
 </p>
