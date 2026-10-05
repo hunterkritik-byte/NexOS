@@ -98,7 +98,6 @@ apt
 procps
 util-linux
 dmidecode
-linux-image-amd64
 
 grub-efi-amd64
 grub-efi-amd64-signed
