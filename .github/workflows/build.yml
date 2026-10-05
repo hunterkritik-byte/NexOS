@@ -201,6 +201,7 @@ jobs:
           chmod +x scripts/build-linux.sh
           cd distro
           sudo ../scripts/build-linux.sh
+          sudo chown -R "$(id -u):$(id -g)" distro/dist
 
       - name: Validate Desktop ISO
         run: |
